@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#16a34a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pikmin 座標筆記">
+  <title>皮克敏巨大花朵座標紀錄</title>
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/map.css">
+  <link rel="stylesheet" href="./css/route-plans.css">
+  <link rel="stylesheet" href="./css/help.css">
+  <link rel="stylesheet" href="./css/stats.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+
+<body>
+  <main class="app">
+    <header class="hero">
+      <div class="hero-badge">🌱 Pikmin Bloom 座標筆記</div>
+      <h1>皮克敏巨大花朵座標紀錄</h1>
+      <p class="subtitle">新增座標、查看資料、產生道路路線，並匯出 GPX 路線檔。</p>
+    </header>
+
+    <!-- 第 1 頁：新增座標 -->
+    <section id="addPage" class="page active">
+      <section class="card">
+        <h2>📍 新增座標資料</h2>
+
+        <label>直接貼上座標</label>
+        <input id="coordinateText" type="text" placeholder="例如：25.033964, 121.564468">
+
+        <p class="hint">
+          可貼：25.033964, 121.564468／121.564468, 25.033964。
+          也可貼 Google Maps 網址，系統會盡量抓出座標。
+        </p>
+
+        <div class="grid">
+          <div>
+            <label>經度 Longitude</label>
+            <input id="x" type="number" step="any" placeholder="例如：121.564468">
+          </div>
+
+          <div>
+            <label>緯度 Latitude</label>
+            <input id="y" type="number" step="any" placeholder="例如：25.033964">
+          </div>
+        </div>
+
+        <button id="parseBtn" class="secondary" type="button">↺ 重新輸入</button>
+        <button id="analyzeBtn" class="blue" type="button">🗺️ 分析地址與區域</button>
+
+        <div id="status" class="status"></div>
+
+        <div class="divider"></div>
+
+        <label>區域</label>
+        <input id="area" type="text" placeholder="例如：台北市 信義區">
+
+        <label>地點名稱</label>
+        <input id="name" type="text" placeholder="例如：台北 101">
+
+
+        <label>地區</label>
+        <select id="category">
+          <option value="未分類">未分類</option>
+          <option value="基隆市">基隆市</option>
+          <option value="台北市">台北市</option>
+          <option value="新北市">新北市</option>
+          <option value="桃園市">桃園市</option>
+          <option value="新竹市">新竹市</option>
+          <option value="新竹縣">新竹縣</option>
+          <option value="苗栗縣">苗栗縣</option>
+          <option value="台中市">台中市</option>
+          <option value="彰化縣">彰化縣</option>
+          <option value="南投縣">南投縣</option>
+          <option value="雲林縣">雲林縣</option>
+          <option value="嘉義市">嘉義市</option>
+          <option value="嘉義縣">嘉義縣</option>
+          <option value="台南市">台南市</option>
+          <option value="高雄市">高雄市</option>
+          <option value="屏東縣">屏東縣</option>
+          <option value="宜蘭縣">宜蘭縣</option>
+          <option value="花蓮縣">花蓮縣</option>
+          <option value="台東縣">台東縣</option>
+          <option value="澎湖縣">澎湖縣</option>
+          <option value="金門縣">金門縣</option>
+          <option value="連江縣">連江縣</option>
+          <option value="其他">其他</option>
+        </select>
+
+        <label>備註</label>
+        <textarea id="note" placeholder="可以輸入花朵顏色、附近地標、路線或其他觀察結果……"></textarea>
+
+        <button id="addBtn" type="button">🌼 新增到紀錄</button>
+
+        <div id="debugStatus" class="debug">版本：1.0.14</div>
+      </section>
+    </section>
+
+    <!-- 第 2 頁：查看座標 -->
+    <section id="viewPage" class="page">
+      <section class="card">
+        <h2>🌼 查看座標</h2>
+
+        <section class="view-tools-panel">
+          <label>搜尋座標</label>
+          <input id="viewSearchText" type="text" placeholder="搜尋地點名稱、區域、備註或縣市">
+
+          <div class="view-tools-actions">
+            <button id="clearViewFiltersBtn" class="small-btn secondary" type="button">清除篩選</button>
+
+            <label class="favorite-filter-toggle">
+              <input id="favoriteOnlyFilter" type="checkbox">
+              <span>只看收藏</span>
+            </label>
+          </div>
+        </section>
+
+
+        <button id="openMapOverviewBtn" class="map-entry-card" type="button">
+          <span class="map-entry-icon">🗺️</span>
+          <span class="map-entry-content">
+            <b>地圖總覽</b>
+            <small>點擊進入地圖頁，依縣市與區域查看座標。</small>
+          </span>
+          <span class="map-entry-arrow">›</span>
+        </button>
+
+        <div id="viewRegionTitle"></div>
+        <div id="list"></div>
+      </section>
+    </section>
+
+    <!-- 地圖頁 -->
+    <section id="mapPage" class="page">
+      <section class="card">
+        <div class="map-page-header">
+          <button id="backToViewFromMapBtn" class="small-btn secondary map-back-btn" type="button">← 返回查看座標</button>
+          <h2>🗺️ 地圖總覽</h2>
+          <p id="mapSummary" class="map-page-summary">地圖會顯示目前篩選條件下的座標。</p>
+        </div>
+
+        <section class="map-filter-panel">
+
+          <label>縣市</label>
+          <select id="mapCityFilter">
+            <option value="全部縣市">全部縣市</option>
+          </select>
+
+          <label>區域</label>
+          <select id="mapDistrictFilter">
+            <option value="全部區域">全部區域</option>
+          </select>
+        </section>
+
+        <div id="overviewMap" class="overview-map"></div>
+        <div id="mapEmpty" class="map-empty" style="display:none;"></div>
+      </section>
+    </section>
+
+    <!-- 第 3 頁：路線規劃 -->
+    <section id="routePage" class="page">
+      <section class="card">
+        <h2>🧭 路線規劃 / GPX</h2>
+
+        <p class="hint">
+          先選擇縣市與區域，再勾選要加入路線的座標。
+          GPX 會使用產生後的道路密集座標點，不是座標之間的直線。
+        </p>
+
+
+        <label>縣市</label>
+        <select id="routeCityFilter">
+          <option value="全部縣市">全部縣市</option>
+        </select>
+
+        <label>區域</label>
+        <select id="routeDistrictFilter">
+          <option value="全部區域">全部區域</option>
+        </select>
+
+        <section class="route-plan-panel">
+          <h3>💾 路線方案儲存</h3>
+          <p class="route-plan-hint">先勾選下方座標，再替這組路線取名並儲存。下次可一鍵載入同一組座標。</p>
+
+          <label>方案名稱</label>
+          <input id="routePlanName" type="text" placeholder="例如：台北信義區繞花路線">
+
+          <div class="actions route-plan-actions">
+            <button id="saveRoutePlanBtn" type="button">💾 儲存目前方案</button>
+            <button id="clearRouteSelectionBtn" class="secondary" type="button">清空勾選</button>
+          </div>
+
+          <label>已儲存方案</label>
+          <select id="savedRoutePlanSelect">
+            <option value="">尚未選擇方案</option>
+          </select>
+
+          <div class="actions route-plan-actions">
+            <button id="loadRoutePlanBtn" class="blue" type="button">📂 載入方案</button>
+            <button id="deleteRoutePlanBtn" class="danger" type="button">🗑️ 刪除方案</button>
+          </div>
+
+          <div id="routePlanStatus" class="route-plan-status" style="display:none;"></div>
+        </section>
+
+        <div class="actions">
+          <button id="routeBtn" class="blue" type="button">🧭 產生道路路線</button>
+          <button id="gpxBtn" type="button">📤 匯出 GPX 路線檔</button>
+        </div>
+
+        <div id="routeResult" class="route-result"></div>
+
+        <h3>本次路線會使用的座標</h3>
+        <div id="routePointList"></div>
+      </section>
+    </section>
+
+    <!-- 第 4 頁：匯入 / 匯出 -->
+    <section id="backupPage" class="page">
+      <section class="card">
+        <h2>📦 匯入 / 匯出記錄檔</h2>
+
+        <p class="hint">
+          匯出會備份目前所有座標與已儲存路線方案；匯入後會合併資料，相同座標與相同路線方案不會重複匯入。
+        </p>
+
+        <div class="actions">
+          <button id="exportBtn" type="button">📤 匯出記錄檔</button>
+          <button id="importBtn" class="blue" type="button">📥 匯入記錄檔</button>
+        </div>
+
+        <button id="reclassifyDistrictBtn" class="secondary" type="button">🛰️ 重新分析未分類區域</button>
+        <button id="clearBtn" class="danger" type="button">清空全部資料</button>
+
+        <input id="importFile" type="file" accept=".json,application/json" style="display:none">
+      </section>
+
+      <section class="creator-link-block">
+        <span class="creator-link-label">創作者：</span>
+        <a
+          class="creator-link"
+          href="https://www.instagram.com/momomo7917?igsh=anR3aHZhdHM1MG1y"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Jack
+        </a>
+      </section>
+    </section>
+
+    <!-- 第 5 頁：統計 -->
+    <section id="statsPage" class="page">
+      <section class="card stats-page-card">
+        <h2>📊 統計總覽</h2>
+        <p class="stats-intro">快速查看目前累積的座標、地區與路線方案。</p>
+
+        <div id="statsSummaryGrid" class="stats-summary-grid"></div>
+
+        <section class="stats-latest-panel">
+          <h3>🕘 最近新增</h3>
+          <div id="statsLatestPoints"></div>
+        </section>
+      </section>
+    </section>
+
+    <!-- 第 6 頁：幫助主頁 -->
+    <section id="helpPage" class="page">
+      <section class="card help-home-card">
+        <h2>❓ 使用幫助</h2>
+        <p class="help-home-intro">
+          點選下方卡片，會進入對應的完整說明頁。
+        </p>
+
+        <div id="helpCardGrid" class="help-card-grid"></div>
+      </section>
+    </section>
+
+    <!-- 幫助說明頁 -->
+    <section id="helpDetailPage" class="page">
+      <section class="card help-detail-page-card">
+        <button id="backToHelpHomeBtn" class="small-btn secondary help-back-btn" type="button">← 返回幫助</button>
+        <div id="helpDetailContent"></div>
+      </section>
+    </section>
+  </main>
+
+  <!-- 底部導覽列 -->
+  <nav class="bottom-nav">
+    <button id="navAdd" class="nav-btn active" type="button">
+      <span>➕</span>
+      <small>新增</small>
+    </button>
+
+    <button id="navView" class="nav-btn" type="button">
+      <span>🌼</span>
+      <small>查看</small>
+    </button>
+
+    <button id="navRoute" class="nav-btn" type="button">
+      <span>🧭</span>
+      <small>路線</small>
+    </button>
+
+    <button id="navBackup" class="nav-btn" type="button">
+      <span>📦</span>
+      <small>備份</small>
+    </button>
+
+    <button id="navStats" class="nav-btn" type="button">
+      <span>📊</span>
+      <small>統計</small>
+    </button>
+
+    <button id="navHelp" class="nav-btn" type="button">
+      <span>❓</span>
+      <small>幫助</small>
+    </button>
+  </nav>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./js/globals.js"></script>
+  <script src="./js/geo.js"></script>
+
+  <script src="./js/records-state.js"></script>
+  <script src="./data/taiwan-districts-a.js"></script>
+  <script src="./data/taiwan-districts-b.js"></script>
+  <script src="./js/records-core.js"></script>
+  <script src="./js/records-view.js"></script>
+
+  <script src="./js/backup.js"></script>
+  <script src="./js/route.js"></script>
+  <script src="./js/route-plans.js"></script>
+  <script src="./js/map.js"></script>
+  <script src="./js/stats.js"></script>
+  <script src="./js/help.js"></script>
+  <script src="./js/pwa.js"></script>
+  <script src="./js/init.js"></script>
+</body>
+</html>
