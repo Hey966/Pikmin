@@ -1,0 +1,221 @@
+/* ===== 幫助主頁與說明頁 ===== */
+
+.bottom-nav {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.help-home-card,
+.help-detail-page-card {
+  overflow: visible;
+}
+
+.help-home-intro {
+  margin: 0 0 16px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.help-card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.help-topic-card {
+  margin-top: 0;
+  width: 100%;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  text-align: left;
+  color: #172033;
+  border-radius: 22px;
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(191, 219, 254, 0.48), transparent 36%),
+    linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 0.96));
+  box-shadow: var(--soft-shadow);
+}
+
+.help-topic-card::before {
+  display: none;
+}
+
+.help-topic-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+}
+
+.help-topic-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 17px;
+  font-size: 25px;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+}
+
+.help-topic-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.help-topic-copy b {
+  color: #1e3a8a;
+  font-size: 17px;
+}
+
+.help-topic-copy small {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+.help-topic-arrow {
+  margin-left: auto;
+  color: #2563eb;
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.help-back-btn {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.help-detail-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(191, 219, 254, 0.92);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(191, 219, 254, 0.45), transparent 34%),
+    linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 0.96));
+  box-shadow: var(--soft-shadow);
+}
+
+.help-detail-icon {
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  font-size: 30px;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+}
+
+.help-detail-hero h2 {
+  margin: 2px 0 8px;
+  color: #166534;
+}
+
+.help-detail-hero p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.help-detail-list {
+  display: grid;
+  gap: 12px;
+}
+
+.help-explain-card {
+  padding: 15px;
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.96);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(253, 186, 116, 0.24), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+  box-shadow: var(--soft-shadow);
+}
+
+.help-explain-card h3 {
+  margin: 0 0 8px;
+  color: #1e3a8a;
+  font-size: 16px;
+}
+
+.help-explain-card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.7;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.help-tip {
+  margin-top: 16px;
+  padding: 13px;
+  border-radius: 18px;
+  border: 1px solid rgba(187, 247, 208, 0.96);
+  background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+  color: #166534;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.6;
+}
+
+@media (min-width: 720px) {
+  .help-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .bottom-nav {
+    gap: 5px;
+    padding: 8px;
+  }
+
+  .bottom-nav .nav-btn {
+    padding: 9px 3px;
+  }
+
+  .bottom-nav .nav-btn span {
+    font-size: 19px;
+  }
+
+  .bottom-nav .nav-btn small {
+    font-size: 11px;
+  }
+
+  .help-topic-card {
+    padding: 13px;
+  }
+
+  .help-topic-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 23px;
+  }
+
+  .help-topic-copy b {
+    font-size: 16px;
+  }
+
+  .help-detail-hero {
+    padding: 14px;
+    gap: 11px;
+  }
+
+  .help-detail-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 26px;
+  }
+}

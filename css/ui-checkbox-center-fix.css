@@ -1,0 +1,27 @@
+/* =========================================================
+   Fix：只看收藏核取方塊尺寸正常、勾勾置中
+   ========================================================= */
+
+.favorite-filter-toggle input[type="checkbox"] {
+  min-width: 18px !important;
+  min-height: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+.favorite-filter-toggle input[type="checkbox"]::after {
+  left: 50% !important;
+  top: 50% !important;
+  width: 5px !important;
+  height: 9px !important;
+  transform: translate(-50%, -58%) rotate(42deg) scale(0) !important;
+  transform-origin: center !important;
+}
+
+.favorite-filter-toggle input[type="checkbox"]:checked::after {
+  transform: translate(-50%, -58%) rotate(42deg) scale(1) !important;
+}

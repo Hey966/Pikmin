@@ -1,1 +1,190 @@
+/* ===== 地圖入口卡片 ===== */
 
+.map-entry-card {
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  color: #172033;
+  border: 1px solid rgba(191, 219, 254, 0.92);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(191, 219, 254, 0.56), transparent 34%),
+    linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 0.95));
+  box-shadow: var(--soft-shadow);
+}
+
+.map-entry-card::before {
+  display: none;
+}
+
+.map-entry-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+}
+
+.map-entry-icon {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  font-size: 28px;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+}
+
+.map-entry-content {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.map-entry-content b {
+  font-size: 18px;
+  color: #1e3a8a;
+}
+
+.map-entry-content small {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 800;
+}
+
+.map-entry-arrow {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: #2563eb;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* ===== 地圖頁 ===== */
+
+.map-page-header {
+  margin-bottom: 14px;
+}
+
+.map-page-header h2 {
+  margin-top: 14px;
+  margin-bottom: 8px;
+}
+
+.map-back-btn {
+  margin-top: 0;
+}
+
+.map-page-summary {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.map-filter-panel {
+  margin: 16px 0;
+  padding: 15px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(134, 239, 172, 0.26), transparent 34%),
+    linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 0.96));
+  border: 1px solid rgba(187, 247, 208, 0.92);
+  box-shadow: var(--soft-shadow);
+}
+
+.map-filter-panel label:first-child {
+  margin-top: 0;
+}
+
+.overview-map {
+  width: 100%;
+  height: 420px;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(191, 219, 254, 0.92);
+  box-shadow: inset 0 0 24px rgba(59, 130, 246, 0.08);
+  background: #eff6ff;
+}
+
+.map-empty {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(248, 250, 252, 0.95);
+  border: 1px solid rgba(226, 232, 240, 0.96);
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.map-popup {
+  min-width: 210px;
+  color: #172033;
+  font-family: Arial, "Microsoft JhengHei", sans-serif;
+}
+
+.map-popup-title {
+  margin-bottom: 8px;
+  color: #166534;
+  font-weight: 950;
+  font-size: 15px;
+}
+
+.map-popup-row,
+.map-popup-note {
+  margin-top: 5px;
+  color: #475569;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.map-popup-note {
+  padding-top: 6px;
+  border-top: 1px dashed rgba(148, 163, 184, 0.45);
+}
+
+.map-popup-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: white !important;
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 18px;
+}
+
+.leaflet-popup-content {
+  margin: 14px 16px;
+}
+
+@media (max-width: 620px) {
+  .overview-map {
+    height: 340px;
+  }
+
+  .map-entry-card {
+    padding: 14px;
+  }
+
+  .map-entry-icon {
+    width: 46px;
+    height: 46px;
+    font-size: 25px;
+  }
+
+  .map-entry-content b {
+    font-size: 17px;
+  }
+}

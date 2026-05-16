@@ -1,0 +1,261 @@
+
+/* ===== UI refine v2：更乾淨、按鈕動態回饋加強 ===== */
+
+:root {
+  --ui-green: #22b35d;
+  --ui-green-dark: #178447;
+  --ui-blue: #377dff;
+  --ui-blue-dark: #255ee8;
+  --ui-red: #ef5a64;
+  --ui-red-dark: #d63d48;
+  --ui-card-shadow: 0 12px 32px rgba(23, 58, 38, 0.08);
+  --ui-soft-shadow: 0 8px 20px rgba(23, 58, 38, 0.06);
+  --ui-press-shadow: 0 6px 14px rgba(23, 58, 38, 0.12);
+}
+
+body {
+  background:
+    radial-gradient(circle at 0% 10%, rgba(160, 235, 185, 0.22), transparent 24%),
+    radial-gradient(circle at 100% 10%, rgba(255, 217, 153, 0.16), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(173, 212, 255, 0.16), transparent 30%),
+    linear-gradient(180deg, #f8fcf8 0%, #eff8f1 58%, #eef4fb 100%);
+}
+
+.hero {
+  box-shadow: 0 18px 44px rgba(22, 120, 61, 0.16);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,0.16), transparent 24%),
+    radial-gradient(circle at 88% 14%, rgba(255,231,177,0.12), transparent 24%),
+    linear-gradient(135deg, #23a953 0%, #31c96f 54%, #4fc7a2 100%);
+}
+
+.hero::after {
+  opacity: 0.12;
+}
+
+.hero-badge {
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.card,
+.map-entry-card,
+.region-card,
+.dex-card,
+.route-plan-panel,
+.route-result,
+.stats-card,
+.stats-latest-panel,
+.help-topic-card,
+.help-detail-hero,
+.help-explain-card,
+.help-tip,
+.import-preview-panel {
+  box-shadow: var(--ui-card-shadow) !important;
+}
+
+.card {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(221, 245, 229, 0.72), transparent 28%),
+    rgba(255,255,255,0.92);
+}
+
+/* ===== 創作者區塊：去掉怪框，改小字連結 ===== */
+.creator-link-block {
+  margin-top: 18px;
+  padding: 2px 0 0;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: center;
+  color: #789085;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.creator-link-label {
+  margin-right: 4px;
+}
+
+.creator-link {
+  color: #177f49;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(23, 127, 73, 0.4);
+  padding-bottom: 1px;
+  transition: color .18s ease, border-color .18s ease, opacity .18s ease;
+}
+
+.creator-link:hover {
+  color: #0f6c3b;
+  border-color: rgba(15, 108, 59, 0.76);
+}
+
+/* ===== 按鈕動態回饋 ===== */
+button,
+.nav-btn,
+.help-topic-card,
+.region-card,
+.dex-card,
+.map-entry-card,
+.item,
+.route-order-btn,
+.favorite-btn,
+.favorite-filter-toggle,
+.map-open-btn,
+.small-btn {
+  transition:
+    transform .16s ease,
+    box-shadow .22s ease,
+    filter .22s ease,
+    background .22s ease,
+    border-color .22s ease,
+    opacity .18s ease;
+}
+
+button {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(25, 131, 67, 0.16), inset 0 1px 0 rgba(255,255,255,0.14);
+}
+
+button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 18%, rgba(255,255,255,0.16) 45%, transparent 72%);
+  transform: translateX(-115%);
+  transition: transform .42s ease;
+  pointer-events: none;
+}
+
+button:hover::after,
+button:focus-visible::after {
+  transform: translateX(115%);
+}
+
+button:hover,
+.nav-btn:hover,
+.help-topic-card:hover,
+.region-card:hover,
+.dex-card:hover,
+.map-entry-card:hover,
+.item:hover,
+.route-order-btn:hover,
+.favorite-btn:hover,
+.favorite-filter-toggle:hover,
+.map-open-btn:hover,
+.small-btn:hover {
+  transform: translateY(-2px);
+  filter: saturate(1.03);
+}
+
+button:active,
+.nav-btn:active,
+.help-topic-card:active,
+.region-card:active,
+.dex-card:active,
+.map-entry-card:active,
+.item:active,
+.route-order-btn:active,
+.favorite-btn:active,
+.favorite-filter-toggle:active,
+.map-open-btn:active,
+.small-btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: var(--ui-press-shadow) !important;
+}
+
+button:focus-visible,
+.nav-btn:focus-visible,
+.help-topic-card:focus-visible,
+.region-card:focus-visible,
+.dex-card:focus-visible,
+.map-entry-card:focus-visible,
+.small-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(55, 125, 255, 0.18), var(--ui-card-shadow) !important;
+}
+
+button.blue,
+.map-open-btn {
+  background: linear-gradient(135deg, var(--ui-blue), var(--ui-blue-dark)) !important;
+}
+
+button.danger {
+  background: linear-gradient(135deg, var(--ui-red), var(--ui-red-dark)) !important;
+}
+
+button.secondary,
+.small-btn.secondary {
+  color: #355647 !important;
+  background: linear-gradient(135deg, #ffffff, #eef7f1) !important;
+  border: 1px solid rgba(196, 223, 205, 0.9) !important;
+  box-shadow: var(--ui-soft-shadow) !important;
+}
+
+.favorite-filter-toggle {
+  min-height: 34px !important;
+  padding: 7px 12px !important;
+  border-radius: 999px !important;
+  font-size: 14px;
+}
+
+/* 導覽按鈕更像 app */
+.bottom-nav {
+  background: rgba(255,255,255,0.88);
+  box-shadow: 0 18px 40px rgba(26, 53, 38, 0.12);
+}
+
+.bottom-nav .nav-btn {
+  border-radius: 20px;
+}
+
+.bottom-nav .nav-btn.active {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(27, 165, 83, 0.18);
+}
+
+.bottom-nav .nav-btn.active:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* 輸入框更柔和 */
+input,
+select,
+textarea {
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .14s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 4px rgba(33, 179, 91, 0.11), 0 10px 22px rgba(33, 179, 91, 0.08);
+}
+
+/* 備份頁按鈕上下間距更舒服 */
+#backupPage .actions {
+  gap: 12px;
+}
+
+#backupPage button {
+  margin-top: 2px;
+}
+
+/* 小螢幕微調 */
+@media (max-width: 640px) {
+  .hero {
+    border-radius: 28px;
+  }
+
+  .card {
+    border-radius: 24px;
+  }
+
+  .creator-link-block {
+    margin-top: 14px;
+    font-size: 12px;
+  }
+}
