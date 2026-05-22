@@ -1,5 +1,5 @@
-const APP_VERSION = "1.0.16";
-const CACHE_NAME = "pikmin-flower-notes-v16";
+const APP_VERSION = "1.0.17";
+const CACHE_NAME = "pikmin-flower-notes-v17";
 
 const APP_ASSETS = [
   "./",
