@@ -1,3 +1,4 @@
+var APP_VERSION = "1.0.16";
 var debugBox = document.getElementById("debugStatus");
 
 function setDebug(text) {
@@ -64,7 +65,7 @@ function updateBottomNav(page) {
 }
 
 function startApp() {
-  setDebug("版本：1.0.14");
+  setDebug("版本：" + APP_VERSION);
 
   if (!safeFunction("loadPoints")) return;
   if (!safeFunction("renderList")) return;
@@ -164,9 +165,6 @@ function startApp() {
     importFile.onchange = importRecords;
   }
 
-
-
-
   var mapCityFilter = document.getElementById("mapCityFilter");
   if (mapCityFilter) {
     mapCityFilter.onchange = function() { updateMapDistrictOptions(); };
@@ -176,7 +174,6 @@ function startApp() {
   if (mapDistrictFilter) {
     mapDistrictFilter.onchange = function() { renderMapOverview(); };
   }
-
 
   var routeCityFilter = document.getElementById("routeCityFilter");
   if (routeCityFilter) {
@@ -203,9 +200,10 @@ function startApp() {
   if (typeof initializeSavedRoutePlans === "function") initializeSavedRoutePlans();
   if (typeof initializeMapSelectors === "function") initializeMapSelectors();
   if (typeof renderHelpCards === "function") renderHelpCards();
+  if (typeof checkForAppUpdate === "function") checkForAppUpdate();
 
   updateBottomNav("add");
-  setDebug("版本：1.0.14");
+  setDebug("版本：" + APP_VERSION);
 }
 
 startApp();
