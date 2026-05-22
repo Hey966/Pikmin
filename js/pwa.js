@@ -9,7 +9,7 @@ function ensureInstallStylesheet() {
   var link = document.createElement("link");
   link.id = "installAppStylesheet";
   link.rel = "stylesheet";
-  link.href = "./css/install.css?v=1.0.17";
+  link.href = "./css/install.css?v=1.0.18";
   document.head.appendChild(link);
 }
 
@@ -234,7 +234,9 @@ function exportGpxRoute() {
 }
 
 function ensureDirectRouteButton() {
+  var routeGrid = document.getElementById("routeActionGrid");
   var routeBtn = document.getElementById("routeBtn");
+  var gpxBtn = document.getElementById("gpxBtn");
 
   if (!routeBtn || document.getElementById("directRouteBtn")) {
     return;
@@ -242,17 +244,20 @@ function ensureDirectRouteButton() {
 
   var button = document.createElement("button");
   button.id = "directRouteBtn";
-  button.className = "secondary";
+  button.className = "route-action-card dark-card";
   button.type = "button";
-  button.innerHTML = "⚡ 點對點直線快速路徑";
+  button.innerHTML = "<span>⚡</span><b>點對點</b><small>直線快速</small>";
   button.onclick = openDirectRoute;
 
-  if (routeBtn.parentNode) {
+  if (routeGrid && gpxBtn) {
+    routeGrid.insertBefore(button, gpxBtn);
+  } else if (routeBtn.parentNode) {
     routeBtn.parentNode.insertBefore(button, routeBtn.nextSibling);
   }
 }
 
 function ensureRegionRoutePickerButton() {
+  var routeGrid = document.getElementById("routeActionGrid");
   var routeBtn = document.getElementById("routeBtn");
 
   if (!routeBtn || document.getElementById("regionRoutePickerBtn")) {
@@ -261,12 +266,14 @@ function ensureRegionRoutePickerButton() {
 
   var button = document.createElement("button");
   button.id = "regionRoutePickerBtn";
-  button.className = "blue";
+  button.className = "route-action-card purple-card";
   button.type = "button";
-  button.innerHTML = "🗺️ 依區域快速產生路線";
+  button.innerHTML = "<span>🗺️</span><b>依區域</b><small>快速產生</small>";
   button.onclick = openRegionRoutePicker;
 
-  if (routeBtn.parentNode) {
+  if (routeGrid) {
+    routeGrid.insertBefore(button, routeBtn);
+  } else if (routeBtn.parentNode) {
     routeBtn.parentNode.insertBefore(button, routeBtn);
   }
 }
@@ -508,7 +515,7 @@ function checkForAppUpdate() {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function() {
-    navigator.serviceWorker.register("./service-worker.js?v=1.0.17").then(function(registration) {
+    navigator.serviceWorker.register("./service-worker.js?v=1.0.18").then(function(registration) {
       appUpdateRegistration = registration;
 
       registration.addEventListener("updatefound", function() {

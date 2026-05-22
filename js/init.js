@@ -1,4 +1,4 @@
-var APP_VERSION = "1.0.17";
+var APP_VERSION = "1.0.18";
 var debugBox = document.getElementById("debugStatus");
 
 function setDebug(text) {
