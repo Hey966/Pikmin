@@ -9,7 +9,7 @@ function ensureInstallStylesheet() {
   var link = document.createElement("link");
   link.id = "installAppStylesheet";
   link.rel = "stylesheet";
-  link.href = "./css/install.css?v=1.0.18";
+  link.href = "./css/install.css?v=1.0.19";
   document.head.appendChild(link);
 }
 
@@ -515,7 +515,7 @@ function checkForAppUpdate() {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function() {
-    navigator.serviceWorker.register("./service-worker.js?v=1.0.18").then(function(registration) {
+    navigator.serviceWorker.register("./service-worker.js?v=1.0.19").then(function(registration) {
       appUpdateRegistration = registration;
 
       registration.addEventListener("updatefound", function() {
