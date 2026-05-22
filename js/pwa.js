@@ -83,6 +83,174 @@ function bindInstallBannerButtons() {
   }
 }
 
+function openDirectRoute() {
+  if (typeof getSelectedPointsForRoute !== "function") {
+    alert("路線功能尚未載入完成，請重新整理後再試。");
+    return;
+  }
+
+  var routePoints = getSelectedPointsForRoute();
+
+  if (routePoints.length < 2) {
+    alert("至少需要勾選 2 個座標才能產生直線快速路徑。");
+    return;
+  }
+
+  var coordinates = [];
+  var directDistanceMeters = 0;
+
+  for (var i = 0; i < routePoints.length; i++) {
+    coordinates.push([
+      Number(routePoints[i].x),
+      Number(routePoints[i].y)
+    ]);
+
+    if (i > 0 && typeof getDistance === "function") {
+      directDistanceMeters += getDistance(
+        Number(routePoints[i - 1].y),
+        Number(routePoints[i - 1].x),
+        Number(routePoints[i].y),
+        Number(routePoints[i].x)
+      ) * 1000;
+    }
+  }
+
+  generatedRoute = {
+    mode: "direct",
+    points: routePoints,
+    coordinates: coordinates,
+    distance: directDistanceMeters,
+    duration: 0,
+    createdAt: new Date().toLocaleString()
+  };
+
+  renderGeneratedDirectRoute();
+}
+
+function renderGeneratedDirectRoute() {
+  var box = document.getElementById("routeResult");
+
+  if (!box || !generatedRoute || generatedRoute.mode !== "direct") return;
+
+  var distanceKm = generatedRoute.distance / 1000;
+  var html = "";
+
+  html += '<div class="route-title">✅ 已產生直線快速路徑</div>';
+  html += '<div class="route-summary">';
+  html += '已勾選路線點數：' + generatedRoute.points.length + ' 個座標<br>';
+  html += '點對點直線節點數：' + generatedRoute.coordinates.length + ' 個<br>';
+  html += '直線總距離：約 ' + distanceKm.toFixed(2) + ' 公里<br>';
+  html += '產生時間：' + escapeHTML(generatedRoute.createdAt);
+  html += '</div>';
+
+  if (typeof buildRouteSvg === "function") {
+    html += buildRouteSvg(generatedRoute.coordinates);
+  }
+
+  html += '<ol class="route-list">';
+
+  for (var i = 0; i < generatedRoute.points.length; i++) {
+    html += '<li>' +
+      escapeHTML(generatedRoute.points[i].name || "未命名巨大花朵") +
+      '｜' +
+      escapeHTML(generatedRoute.points[i].y) +
+      ', ' +
+      escapeHTML(generatedRoute.points[i].x) +
+      '</li>';
+  }
+
+  html += '</ol>';
+  html += '<button class="small-btn blue" type="button" onclick="openGeneratedRouteInGoogleMaps()">用 Google 地圖依順序開啟</button>';
+  html += '<div class="route-note">此模式會依勾選順序直接用點對點直線連接，速度快，但不代表實際可行走道路。需要更貼近現實步行時，請改用「產生道路路線」。</div>';
+
+  box.style.display = "block";
+  box.innerHTML = html;
+}
+
+function buildGpxTextFromDirectRoute(routeData) {
+  var nowText = new Date().toISOString();
+  var gpx = "";
+
+  gpx += '<?xml version="1.0" encoding="UTF-8"?>\n';
+  gpx += '<gpx version="1.1" creator="Pikmin Big Flower Coordinate Recorder" xmlns="http://www.topografix.com/GPX/1/1">\n';
+  gpx += '  <metadata>\n';
+  gpx += '    <name>皮克敏巨大花朵直線快速路徑</name>\n';
+  gpx += '    <desc>此 GPX 依勾選順序直接以點對點直線連接，不做道路校正。</desc>\n';
+  gpx += '    <time>' + nowText + '</time>\n';
+  gpx += '  </metadata>\n';
+
+  for (var i = 0; i < routeData.points.length; i++) {
+    var p = routeData.points[i];
+    gpx += '  <wpt lat="' + Number(p.y) + '" lon="' + Number(p.x) + '">\n';
+    gpx += '    <name>' + escapeXML((i + 1) + ". " + (p.name || "未命名巨大花朵")) + '</name>\n';
+    gpx += '    <desc>' + escapeXML(joinRouteDesc(p)) + '</desc>\n';
+    gpx += '  </wpt>\n';
+  }
+
+  gpx += '  <rte>\n';
+  gpx += '    <name>點對點直線快速路徑</name>\n';
+
+  for (var r = 0; r < routeData.coordinates.length; r++) {
+    var rc = routeData.coordinates[r];
+    gpx += '    <rtept lat="' + Number(rc[1]) + '" lon="' + Number(rc[0]) + '">\n';
+    gpx += '      <name>直線點 ' + (r + 1) + '</name>\n';
+    gpx += '    </rtept>\n';
+  }
+
+  gpx += '  </rte>\n';
+  gpx += '  <trk>\n';
+  gpx += '    <name>點對點直線 GPX 軌跡</name>\n';
+  gpx += '    <trkseg>\n';
+
+  for (var t = 0; t < routeData.coordinates.length; t++) {
+    var tc = routeData.coordinates[t];
+    gpx += '      <trkpt lat="' + Number(tc[1]) + '" lon="' + Number(tc[0]) + '"></trkpt>\n';
+  }
+
+  gpx += '    </trkseg>\n';
+  gpx += '  </trk>\n';
+  gpx += '</gpx>\n';
+
+  return gpx;
+}
+
+function exportGpxRoute() {
+  if (!generatedRoute || !generatedRoute.coordinates || generatedRoute.coordinates.length < 2) {
+    alert("請先產生道路路線或直線快速路徑，再匯出 GPX。");
+    return;
+  }
+
+  var isDirectRoute = generatedRoute.mode === "direct";
+  var gpxText = isDirectRoute
+    ? buildGpxTextFromDirectRoute(generatedRoute)
+    : buildGpxTextFromGeneratedRoute(generatedRoute);
+  var fileName = isDirectRoute
+    ? "pikmin-flower-direct-route-" + getTodayText() + ".gpx"
+    : "pikmin-flower-road-route-" + getTodayText() + ".gpx";
+
+  downloadTextFile(fileName, gpxText, "application/gpx+xml");
+  alert("已匯出 GPX 路線檔：" + fileName);
+}
+
+function ensureDirectRouteButton() {
+  var routeBtn = document.getElementById("routeBtn");
+
+  if (!routeBtn || document.getElementById("directRouteBtn")) {
+    return;
+  }
+
+  var button = document.createElement("button");
+  button.id = "directRouteBtn";
+  button.className = "secondary";
+  button.type = "button";
+  button.innerHTML = "⚡ 點對點直線快速路徑";
+  button.onclick = openDirectRoute;
+
+  if (routeBtn.parentNode) {
+    routeBtn.parentNode.insertBefore(button, routeBtn.nextSibling);
+  }
+}
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function() {
     navigator.serviceWorker.register("./service-worker.js").catch(function() {
@@ -105,4 +273,9 @@ window.addEventListener("appinstalled", function() {
 document.addEventListener("DOMContentLoaded", function() {
   ensureInstallStylesheet();
   ensureInstallAppBanner();
+  ensureDirectRouteButton();
+});
+
+window.addEventListener("load", function() {
+  ensureDirectRouteButton();
 });
