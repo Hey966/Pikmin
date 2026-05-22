@@ -9,14 +9,14 @@
   <meta name="apple-mobile-web-app-title" content="Pikmin 座標筆記">
   <title>皮克敏巨大花朵座標紀錄</title>
 
-  <link rel="manifest" href="./manifest.webmanifest?v=1.0.17">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png?v=1.0.17">
+  <link rel="manifest" href="./manifest.webmanifest?v=1.0.18">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png?v=1.0.18">
 
-  <link rel="stylesheet" href="./css/style.css?v=1.0.17">
-  <link rel="stylesheet" href="./css/map.css?v=1.0.17">
-  <link rel="stylesheet" href="./css/route-plans.css?v=1.0.17">
-  <link rel="stylesheet" href="./css/help.css?v=1.0.17">
-  <link rel="stylesheet" href="./css/stats.css?v=1.0.17">
+  <link rel="stylesheet" href="./css/style.css?v=1.0.18">
+  <link rel="stylesheet" href="./css/map.css?v=1.0.18">
+  <link rel="stylesheet" href="./css/route-plans.css?v=1.0.18">
+  <link rel="stylesheet" href="./css/help.css?v=1.0.18">
+  <link rel="stylesheet" href="./css/stats.css?v=1.0.18">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 
@@ -100,7 +100,7 @@
 
         <button id="addBtn" type="button">🌼 新增到紀錄</button>
 
-        <div id="debugStatus" class="debug">版本：1.0.17</div>
+        <div id="debugStatus" class="debug">版本：1.0.18</div>
       </section>
     </section>
 
@@ -167,7 +167,7 @@
 
     <!-- 第 3 頁：路線規劃 -->
     <section id="routePage" class="page">
-      <section class="card">
+      <section class="card route-page-card">
         <h2>🧭 路線規劃 / GPX</h2>
 
         <p class="hint">
@@ -186,16 +186,28 @@
           <option value="全部區域">全部區域</option>
         </select>
 
-        <section class="route-plan-panel">
-          <h3>💾 路線方案儲存</h3>
-          <p class="route-plan-hint">先勾選下方座標，再替這組路線取名並儲存。下次可一鍵載入同一組座標。</p>
+        <section class="route-plan-panel compact-route-panel">
+          <div class="route-plan-headline">
+            <div>
+              <h3>💾 路線方案</h3>
+              <p class="route-plan-hint">儲存常用路線，之後可快速載入同一組座標。</p>
+            </div>
+          </div>
 
           <label>方案名稱</label>
           <input id="routePlanName" type="text" placeholder="例如：台北信義區繞花路線">
 
-          <div class="actions route-plan-actions">
-            <button id="saveRoutePlanBtn" type="button">💾 儲存目前方案</button>
-            <button id="clearRouteSelectionBtn" class="secondary" type="button">清空勾選</button>
+          <div class="route-compact-grid route-save-grid">
+            <button id="saveRoutePlanBtn" class="route-mini-card green-card" type="button">
+              <span>💾</span>
+              <b>儲存</b>
+              <small>目前方案</small>
+            </button>
+            <button id="clearRouteSelectionBtn" class="route-mini-card dark-card" type="button">
+              <span>🧹</span>
+              <b>清空</b>
+              <small>勾選</small>
+            </button>
           </div>
 
           <label>已儲存方案</label>
@@ -203,17 +215,33 @@
             <option value="">尚未選擇方案</option>
           </select>
 
-          <div class="actions route-plan-actions">
-            <button id="loadRoutePlanBtn" class="blue" type="button">📂 載入方案</button>
-            <button id="deleteRoutePlanBtn" class="danger" type="button">🗑️ 刪除方案</button>
+          <div class="route-compact-grid route-save-grid">
+            <button id="loadRoutePlanBtn" class="route-mini-card blue-card" type="button">
+              <span>📂</span>
+              <b>載入</b>
+              <small>方案</small>
+            </button>
+            <button id="deleteRoutePlanBtn" class="route-mini-card red-card" type="button">
+              <span>🗑️</span>
+              <b>刪除</b>
+              <small>方案</small>
+            </button>
           </div>
 
           <div id="routePlanStatus" class="route-plan-status" style="display:none;"></div>
         </section>
 
-        <div class="actions">
-          <button id="routeBtn" class="blue" type="button">🧭 產生道路路線</button>
-          <button id="gpxBtn" type="button">📤 匯出 GPX 路線檔</button>
+        <div id="routeActionGrid" class="route-action-grid">
+          <button id="routeBtn" class="route-action-card blue-card" type="button">
+            <span>🧭</span>
+            <b>產生道路</b>
+            <small>路線</small>
+          </button>
+          <button id="gpxBtn" class="route-action-card green-card" type="button">
+            <span>📤</span>
+            <b>匯出 GPX</b>
+            <small>路線檔</small>
+          </button>
         </div>
 
         <div id="routeResult" class="route-result"></div>
@@ -326,22 +354,22 @@
   </nav>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="./js/globals.js?v=1.0.17"></script>
-  <script src="./js/geo.js?v=1.0.17"></script>
+  <script src="./js/globals.js?v=1.0.18"></script>
+  <script src="./js/geo.js?v=1.0.18"></script>
 
-  <script src="./js/records-state.js?v=1.0.17"></script>
-  <script src="./data/taiwan-districts-a.js?v=1.0.17"></script>
-  <script src="./data/taiwan-districts-b.js?v=1.0.17"></script>
-  <script src="./js/records-core.js?v=1.0.17"></script>
-  <script src="./js/records-view.js?v=1.0.17"></script>
+  <script src="./js/records-state.js?v=1.0.18"></script>
+  <script src="./data/taiwan-districts-a.js?v=1.0.18"></script>
+  <script src="./data/taiwan-districts-b.js?v=1.0.18"></script>
+  <script src="./js/records-core.js?v=1.0.18"></script>
+  <script src="./js/records-view.js?v=1.0.18"></script>
 
-  <script src="./js/backup.js?v=1.0.17"></script>
-  <script src="./js/route.js?v=1.0.17"></script>
-  <script src="./js/route-plans.js?v=1.0.17"></script>
-  <script src="./js/map.js?v=1.0.17"></script>
-  <script src="./js/stats.js?v=1.0.17"></script>
-  <script src="./js/help.js?v=1.0.17"></script>
-  <script src="./js/pwa.js?v=1.0.17"></script>
-  <script src="./js/init.js?v=1.0.17"></script>
+  <script src="./js/backup.js?v=1.0.18"></script>
+  <script src="./js/route.js?v=1.0.18"></script>
+  <script src="./js/route-plans.js?v=1.0.18"></script>
+  <script src="./js/map.js?v=1.0.18"></script>
+  <script src="./js/stats.js?v=1.0.18"></script>
+  <script src="./js/help.js?v=1.0.18"></script>
+  <script src="./js/pwa.js?v=1.0.18"></script>
+  <script src="./js/init.js?v=1.0.18"></script>
 </body>
 </html>
