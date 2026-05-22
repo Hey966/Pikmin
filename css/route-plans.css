@@ -1,5 +1,9 @@
 /* ===== 路線方案儲存 ===== */
 
+.route-page-card {
+  overflow: hidden;
+}
+
 .route-plan-panel {
   margin-top: 18px;
   margin-bottom: 16px;
@@ -12,22 +16,122 @@
   box-shadow: var(--soft-shadow);
 }
 
+.compact-route-panel {
+  padding: 14px;
+}
+
+.route-plan-headline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .route-plan-panel h3 {
   margin-top: 0;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: #166534;
 }
 
 .route-plan-hint {
   margin: 0 0 10px;
   color: #64748b;
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.45;
   font-weight: 700;
 }
 
 .route-plan-actions {
   margin-top: 4px;
+}
+
+.route-compact-grid,
+.route-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+
+.route-action-grid {
+  margin-top: 18px;
+  margin-bottom: 18px;
+}
+
+.route-mini-card,
+.route-action-card {
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 20px;
+  color: #ffffff;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.14);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-align: center;
+  line-height: 1.2;
+  transform: translateZ(0);
+}
+
+.route-mini-card {
+  min-height: 74px;
+  padding: 10px 8px;
+}
+
+.route-action-card {
+  min-height: 88px;
+  padding: 13px 9px;
+}
+
+.route-mini-card span,
+.route-action-card span {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.route-mini-card b,
+.route-action-card b {
+  display: block;
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+}
+
+.route-action-card b {
+  font-size: 17px;
+}
+
+.route-mini-card small,
+.route-action-card small {
+  display: block;
+  font-size: 12px;
+  font-weight: 850;
+  opacity: 0.9;
+}
+
+.route-mini-card:active,
+.route-action-card:active {
+  transform: scale(0.98);
+}
+
+.blue-card {
+  background: linear-gradient(135deg, #60a5fa, #1d4ed8);
+}
+
+.green-card {
+  background: linear-gradient(135deg, #22c55e, #15803d);
+}
+
+.red-card {
+  background: linear-gradient(135deg, #fb7185, #dc2626);
+}
+
+.dark-card {
+  background: linear-gradient(135deg, #475569, #0f172a);
 }
 
 .route-plan-status {
@@ -54,8 +158,23 @@
   color: #b91c1c;
 }
 
+@media (min-width: 640px) {
+  .route-action-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 620px) {
   .route-plan-panel {
     padding: 14px;
+  }
+
+  .route-compact-grid,
+  .route-action-grid {
+    gap: 9px;
+  }
+
+  .route-action-card {
+    min-height: 82px;
   }
 }
