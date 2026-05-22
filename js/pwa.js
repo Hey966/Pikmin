@@ -9,7 +9,7 @@ function ensureInstallStylesheet() {
   var link = document.createElement("link");
   link.id = "installAppStylesheet";
   link.rel = "stylesheet";
-  link.href = "./css/install.css?v=1.0.16";
+  link.href = "./css/install.css?v=1.0.17";
   document.head.appendChild(link);
 }
 
@@ -252,18 +252,181 @@ function ensureDirectRouteButton() {
   }
 }
 
+function ensureRegionRoutePickerButton() {
+  var routeBtn = document.getElementById("routeBtn");
+
+  if (!routeBtn || document.getElementById("regionRoutePickerBtn")) {
+    return;
+  }
+
+  var button = document.createElement("button");
+  button.id = "regionRoutePickerBtn";
+  button.className = "blue";
+  button.type = "button";
+  button.innerHTML = "🗺️ 依區域快速產生路線";
+  button.onclick = openRegionRoutePicker;
+
+  if (routeBtn.parentNode) {
+    routeBtn.parentNode.insertBefore(button, routeBtn);
+  }
+}
+
+function ensureRegionRoutePickerStyles() {
+  if (document.getElementById("regionRoutePickerStyles")) return;
+
+  var style = document.createElement("style");
+  style.id = "regionRoutePickerStyles";
+  style.innerHTML =
+    ".region-route-overlay{position:fixed;inset:0;z-index:1500;background:rgba(15,23,42,.5);display:flex;align-items:flex-end;justify-content:center;padding:14px;}" +
+    ".region-route-sheet{width:min(720px,100%);max-height:86vh;overflow:auto;background:#f8fff8;border-radius:26px;padding:18px;box-shadow:0 24px 70px rgba(15,23,42,.28);font-family:Arial,'Microsoft JhengHei',sans-serif;}" +
+    ".region-route-head{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}" +
+    ".region-route-head h3{margin:0;color:#1f2937;font-size:22px;}" +
+    ".region-route-head p{margin:5px 0 0;color:#64748b;line-height:1.45;font-size:14px;}" +
+    ".region-route-close{width:auto;margin:0;padding:7px 12px;border-radius:999px;background:#e5e7eb;color:#111827;box-shadow:none;}" +
+    ".region-route-toolbar{display:flex;gap:8px;margin:8px 0 12px;flex-wrap:wrap;}" +
+    ".region-route-back{width:auto;margin:0;padding:8px 12px;border-radius:999px;background:#dbeafe;color:#1d4ed8;box-shadow:none;}" +
+    ".region-route-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;}" +
+    ".region-route-tile{min-height:62px;margin:0;padding:12px 8px;border:1px solid rgba(148,163,184,.38);border-radius:18px;background:white;color:#1f2937;font-weight:800;font-size:15px;line-height:1.25;box-shadow:0 10px 24px rgba(15,23,42,.08);}" +
+    ".region-route-tile small{display:block;margin-top:4px;color:#64748b;font-weight:700;font-size:12px;}" +
+    ".region-route-tile:active{transform:scale(.98);}";
+  document.head.appendChild(style);
+}
+
+function openRegionRoutePicker() {
+  ensureRegionRoutePickerStyles();
+
+  var oldOverlay = document.getElementById("regionRoutePickerOverlay");
+  if (oldOverlay) oldOverlay.remove();
+
+  var overlay = document.createElement("div");
+  overlay.id = "regionRoutePickerOverlay";
+  overlay.className = "region-route-overlay";
+  overlay.onclick = function(event) {
+    if (event.target === overlay) closeRegionRoutePicker();
+  };
+
+  overlay.innerHTML =
+    '<section class="region-route-sheet" role="dialog" aria-modal="true" aria-label="依區域快速產生路線">' +
+    '<div class="region-route-head">' +
+    '<div><h3 id="regionRouteTitle">選擇縣市</h3><p id="regionRouteHint">先選縣市，再選區域；選完會自動套用篩選、全選該區域座標並產生道路路線。</p></div>' +
+    '<button class="region-route-close" type="button" onclick="closeRegionRoutePicker()">關閉</button>' +
+    '</div>' +
+    '<div id="regionRouteToolbar" class="region-route-toolbar"></div>' +
+    '<div id="regionRouteGrid" class="region-route-grid"></div>' +
+    '</section>';
+
+  document.body.appendChild(overlay);
+  renderRegionRouteCityStep();
+}
+
+function closeRegionRoutePicker() {
+  var overlay = document.getElementById("regionRoutePickerOverlay");
+  if (overlay) overlay.remove();
+}
+
+function renderRegionRouteCityStep() {
+  var title = document.getElementById("regionRouteTitle");
+  var hint = document.getElementById("regionRouteHint");
+  var toolbar = document.getElementById("regionRouteToolbar");
+  var grid = document.getElementById("regionRouteGrid");
+
+  if (!grid) return;
+
+  if (title) title.innerHTML = "選擇縣市";
+  if (hint) hint.innerHTML = "先選縣市，再選該縣市底下的區域。";
+  if (toolbar) toolbar.innerHTML = "";
+
+  var cities = typeof getRouteCitiesByCountry === "function"
+    ? getRouteCitiesByCountry("台灣")
+    : (typeof TAIWAN_REGIONS !== "undefined" ? TAIWAN_REGIONS : []);
+
+  var html = "";
+
+  for (var i = 0; i < cities.length; i++) {
+    html += '<button class="region-route-tile" type="button" onclick="renderRegionRouteDistrictStep(\'' + escapeHTML(String(cities[i])) + '\')">' +
+      escapeHTML(cities[i]) +
+      '</button>';
+  }
+
+  grid.innerHTML = html;
+}
+
+function renderRegionRouteDistrictStep(city) {
+  var title = document.getElementById("regionRouteTitle");
+  var hint = document.getElementById("regionRouteHint");
+  var toolbar = document.getElementById("regionRouteToolbar");
+  var grid = document.getElementById("regionRouteGrid");
+
+  if (!grid) return;
+
+  if (title) title.innerHTML = escapeHTML(city);
+  if (hint) hint.innerHTML = "選擇區域後，系統會直接使用該區域座標產生道路路線。";
+  if (toolbar) {
+    toolbar.innerHTML = '<button class="region-route-back" type="button" onclick="renderRegionRouteCityStep()">← 返回縣市</button>';
+  }
+
+  var districts = typeof getRouteDistricts === "function" ? getRouteDistricts("台灣", city) : [];
+  var html = "";
+
+  html += '<button class="region-route-tile" type="button" onclick="applyRegionRouteSelection(\'' + escapeHTML(String(city)) + '\', \'全部區域\')">全部區域<small>使用全市座標</small></button>';
+
+  for (var i = 0; i < districts.length; i++) {
+    html += '<button class="region-route-tile" type="button" onclick="applyRegionRouteSelection(\'' + escapeHTML(String(city)) + '\', \'' + escapeHTML(String(districts[i])) + '\')">' +
+      escapeHTML(districts[i]) +
+      '</button>';
+  }
+
+  grid.innerHTML = html;
+}
+
+function applyRegionRouteSelection(city, district) {
+  var citySelect = document.getElementById("routeCityFilter");
+  var districtSelect = document.getElementById("routeDistrictFilter");
+
+  if (!citySelect || !districtSelect) {
+    alert("找不到路線篩選選單，請重新整理後再試。");
+    return;
+  }
+
+  citySelect.value = city;
+
+  if (typeof updateRouteDistrictOptions === "function") {
+    updateRouteDistrictOptions();
+  }
+
+  districtSelect = document.getElementById("routeDistrictFilter");
+  if (districtSelect) {
+    districtSelect.value = district;
+  }
+
+  if (typeof resetRouteManualOrder === "function") resetRouteManualOrder();
+  if (typeof resetGeneratedRoute === "function") resetGeneratedRoute();
+  if (typeof renderRoutePointList === "function") renderRoutePointList();
+  if (typeof selectAllRoutePoints === "function") selectAllRoutePoints(true);
+
+  closeRegionRoutePicker();
+
+  if (typeof goPage === "function") goPage("route");
+
+  var selectedPoints = typeof getSelectedPointsForRoute === "function" ? getSelectedPointsForRoute() : [];
+
+  if (selectedPoints.length < 2) {
+    alert("「" + city + " " + district + "」目前少於 2 個可用座標，無法產生路線。");
+    return;
+  }
+
+  if (typeof openAutoRoute === "function") {
+    openAutoRoute();
+  }
+}
+
 function ensureUpdateBannerStyles() {
   if (document.getElementById("appUpdateBannerStyles")) return;
 
   var style = document.createElement("style");
   style.id = "appUpdateBannerStyles";
   style.innerHTML =
-    ".app-update-banner{" +
-    "position:fixed;left:12px;right:12px;bottom:92px;z-index:1200;" +
-    "padding:14px;border-radius:20px;background:linear-gradient(135deg,#1d4ed8,#2563eb);" +
-    "color:white;box-shadow:0 18px 45px rgba(37,99,235,.32);" +
-    "display:flex;gap:12px;align-items:center;justify-content:space-between;" +
-    "font-family:Arial,'Microsoft JhengHei',sans-serif;}" +
+    ".app-update-banner{position:fixed;left:12px;right:12px;bottom:92px;z-index:1200;padding:14px;border-radius:20px;background:linear-gradient(135deg,#1d4ed8,#2563eb);color:white;box-shadow:0 18px 45px rgba(37,99,235,.32);display:flex;gap:12px;align-items:center;justify-content:space-between;font-family:Arial,'Microsoft JhengHei',sans-serif;}" +
     ".app-update-banner b{display:block;font-size:15px;}" +
     ".app-update-banner small{display:block;margin-top:3px;opacity:.9;line-height:1.35;}" +
     ".app-update-banner button{width:auto;margin:0;padding:9px 13px;border-radius:999px;background:white;color:#1d4ed8;box-shadow:none;}";
@@ -345,7 +508,7 @@ function checkForAppUpdate() {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function() {
-    navigator.serviceWorker.register("./service-worker.js?v=1.0.16").then(function(registration) {
+    navigator.serviceWorker.register("./service-worker.js?v=1.0.17").then(function(registration) {
       appUpdateRegistration = registration;
 
       registration.addEventListener("updatefound", function() {
@@ -383,9 +546,11 @@ document.addEventListener("DOMContentLoaded", function() {
   ensureInstallStylesheet();
   ensureInstallAppBanner();
   ensureDirectRouteButton();
+  ensureRegionRoutePickerButton();
 });
 
 window.addEventListener("load", function() {
   ensureDirectRouteButton();
+  ensureRegionRoutePickerButton();
   checkForAppUpdate();
 });
