@@ -126,6 +126,10 @@
   background: linear-gradient(135deg, #22c55e, #15803d);
 }
 
+.purple-card {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+}
+
 .red-card {
   background: linear-gradient(135deg, #fb7185, #dc2626);
 }
