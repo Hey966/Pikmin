@@ -1,4 +1,5 @@
 var deferredInstallPrompt = null;
+var appUpdateRegistration = null;
 
 function ensureInstallStylesheet() {
   if (document.getElementById("installAppStylesheet")) {
@@ -8,7 +9,7 @@ function ensureInstallStylesheet() {
   var link = document.createElement("link");
   link.id = "installAppStylesheet";
   link.rel = "stylesheet";
-  link.href = "./css/install.css";
+  link.href = "./css/install.css?v=1.0.16";
   document.head.appendChild(link);
 }
 
@@ -251,11 +252,119 @@ function ensureDirectRouteButton() {
   }
 }
 
+function ensureUpdateBannerStyles() {
+  if (document.getElementById("appUpdateBannerStyles")) return;
+
+  var style = document.createElement("style");
+  style.id = "appUpdateBannerStyles";
+  style.innerHTML =
+    ".app-update-banner{" +
+    "position:fixed;left:12px;right:12px;bottom:92px;z-index:1200;" +
+    "padding:14px;border-radius:20px;background:linear-gradient(135deg,#1d4ed8,#2563eb);" +
+    "color:white;box-shadow:0 18px 45px rgba(37,99,235,.32);" +
+    "display:flex;gap:12px;align-items:center;justify-content:space-between;" +
+    "font-family:Arial,'Microsoft JhengHei',sans-serif;}" +
+    ".app-update-banner b{display:block;font-size:15px;}" +
+    ".app-update-banner small{display:block;margin-top:3px;opacity:.9;line-height:1.35;}" +
+    ".app-update-banner button{width:auto;margin:0;padding:9px 13px;border-radius:999px;background:white;color:#1d4ed8;box-shadow:none;}";
+  document.head.appendChild(style);
+}
+
+function showAppUpdateBanner(newVersion, message) {
+  ensureUpdateBannerStyles();
+
+  var oldBanner = document.getElementById("appUpdateBanner");
+  if (oldBanner) oldBanner.remove();
+
+  var banner = document.createElement("aside");
+  banner.id = "appUpdateBanner";
+  banner.className = "app-update-banner";
+  banner.innerHTML =
+    '<div>' +
+    '<b>發現新版本 ' + escapeHTML(newVersion || "") + '</b>' +
+    '<small>' + escapeHTML(message || "點一下更新到最新版本。") + '</small>' +
+    '</div>' +
+    '<button id="reloadAppUpdateBtn" type="button">立即更新</button>';
+
+  document.body.appendChild(banner);
+
+  var reloadBtn = document.getElementById("reloadAppUpdateBtn");
+  if (reloadBtn) {
+    reloadBtn.onclick = reloadAppForUpdate;
+  }
+}
+
+function reloadAppForUpdate() {
+  if (appUpdateRegistration && appUpdateRegistration.waiting) {
+    appUpdateRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
+  }
+
+  if ("caches" in window) {
+    caches.keys().then(function(keys) {
+      return Promise.all(keys.map(function(key) { return caches.delete(key); }));
+    }).then(function() {
+      window.location.reload();
+    });
+    return;
+  }
+
+  window.location.reload();
+}
+
+function checkForAppUpdate() {
+  var currentVersion = typeof APP_VERSION !== "undefined" ? APP_VERSION : "";
+
+  fetch("./version.json?v=" + new Date().getTime(), { cache: "no-store" })
+    .then(function(response) {
+      if (!response || !response.ok) return null;
+      return response.json();
+    })
+    .then(function(data) {
+      if (!data || !data.version || !currentVersion) return;
+
+      if (String(data.version) !== String(currentVersion)) {
+        showAppUpdateBanner(data.version, data.message);
+      }
+    })
+    .catch(function() {
+      // 靜默略過版本檢查錯誤。
+    });
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistration().then(function(registration) {
+      if (!registration) return;
+      appUpdateRegistration = registration;
+      registration.update();
+
+      if (registration.waiting) {
+        showAppUpdateBanner(currentVersion, "新版已準備完成，點一下重新載入。");
+      }
+    });
+  }
+}
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function() {
-    navigator.serviceWorker.register("./service-worker.js").catch(function() {
+    navigator.serviceWorker.register("./service-worker.js?v=1.0.16").then(function(registration) {
+      appUpdateRegistration = registration;
+
+      registration.addEventListener("updatefound", function() {
+        var installingWorker = registration.installing;
+        if (!installingWorker) return;
+
+        installingWorker.addEventListener("statechange", function() {
+          if (installingWorker.state === "installed" && navigator.serviceWorker.controller) {
+            showAppUpdateBanner(typeof APP_VERSION !== "undefined" ? APP_VERSION : "", "新版已下載完成，點一下重新載入。");
+          }
+        });
+      });
+    }).catch(function() {
       // 靜默略過，避免影響網站主要功能。
     });
+  });
+
+  navigator.serviceWorker.addEventListener("controllerchange", function() {
+    window.location.reload();
   });
 }
 
@@ -278,4 +387,5 @@ document.addEventListener("DOMContentLoaded", function() {
 
 window.addEventListener("load", function() {
   ensureDirectRouteButton();
+  checkForAppUpdate();
 });
