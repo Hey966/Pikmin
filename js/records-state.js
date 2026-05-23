@@ -13,7 +13,12 @@ var TAIWAN_REGIONS = [
 var TAIWAN_DISTRICTS = {};
 
 function getSelectedViewCountry() {
-  return "台灣";
+  if (typeof getViewCountryValue === "function") {
+    return getViewCountryValue();
+  }
+
+  var select = document.getElementById("viewCountryFilter");
+  return normalizeCountryValue(select ? select.value : "台灣");
 }
 
 function normalizeCountryValue(country) {
@@ -39,7 +44,7 @@ function getPointDistrict(point) {
     return point.district;
   }
 
-  return guessDistrictFromArea(point ? point.area : "", point ? point.category : "");
+  return guessDistrictByCountry(point ? point.area : "", point ? point.category : "", getPointCountry(point));
 }
 
 function guessCountryFromCategory(category) {
@@ -47,6 +52,10 @@ function guessCountryFromCategory(category) {
 }
 
 function guessDistrictByCountry(area, category, country) {
+  if (normalizeCountryValue(country) !== "台灣") {
+    return "未分類區域";
+  }
+
   return guessDistrictFromArea(area, category);
 }
 
@@ -81,7 +90,9 @@ function guessDistrictFromArea(area, category) {
 }
 
 function resolveDistrictForSave(area, category) {
-  return guessDistrictFromArea(area, category);
+  var countrySelect = document.getElementById("country");
+  var country = countrySelect ? countrySelect.value : "台灣";
+  return guessDistrictByCountry(area, category, country);
 }
 
 function normalizeTaiwanText(text) {
@@ -89,12 +100,36 @@ function normalizeTaiwanText(text) {
 }
 
 function shortRegionName(region) {
-  // 統一顯示完整縣市名稱，例如：台中市、台北市、新北市。
   return String(region || "");
 }
 
 function getRegionsForCountry(country) {
-  return TAIWAN_REGIONS;
+  country = normalizeCountryValue(country);
+
+  if (country === "台灣") {
+    return TAIWAN_REGIONS;
+  }
+
+  var regionMap = {};
+  var regions = [];
+
+  for (var i = 0; i < points.length; i++) {
+    var p = points[i];
+
+    if (getPointCountry(p) !== country) {
+      continue;
+    }
+
+    var region = p.category || "未分類";
+
+    if (!regionMap[region]) {
+      regionMap[region] = true;
+      regions.push(region);
+    }
+  }
+
+  regions.sort();
+  return regions;
 }
 
 function getDistrictsForTaiwanCity(city) {
@@ -164,7 +199,7 @@ function countPointsInRegion(country, region) {
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
 
-    if (getPointCountry(p) === "台灣" && p.category === region) {
+    if (getPointCountry(p) === normalizeCountryValue(country) && p.category === region) {
       count++;
     }
   }
