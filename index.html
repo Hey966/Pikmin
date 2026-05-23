@@ -9,14 +9,15 @@
   <meta name="apple-mobile-web-app-title" content="Pikmin 座標筆記">
   <title>皮克敏巨大花朵座標紀錄</title>
 
-  <link rel="manifest" href="./manifest.webmanifest?v=1.0.22">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png?v=1.0.22">
+  <link rel="manifest" href="./manifest.webmanifest?v=1.0.23">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png?v=1.0.23">
 
-  <link rel="stylesheet" href="./css/style.css?v=1.0.22">
-  <link rel="stylesheet" href="./css/map.css?v=1.0.22">
-  <link rel="stylesheet" href="./css/route-plans.css?v=1.0.22">
-  <link rel="stylesheet" href="./css/help.css?v=1.0.22">
-  <link rel="stylesheet" href="./css/stats.css?v=1.0.22">
+  <link rel="stylesheet" href="./css/style.css?v=1.0.23">
+  <link rel="stylesheet" href="./css/add-actions.css?v=1.0.23">
+  <link rel="stylesheet" href="./css/map.css?v=1.0.23">
+  <link rel="stylesheet" href="./css/route-plans.css?v=1.0.23">
+  <link rel="stylesheet" href="./css/help.css?v=1.0.23">
+  <link rel="stylesheet" href="./css/stats.css?v=1.0.23">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 
@@ -38,13 +39,11 @@
         <input id="x" type="hidden">
         <input id="y" type="hidden">
 
-        <p class="hint">
-          可貼：25.033964, 121.564468／121.564468, 25.033964。
-          也可貼 Google Maps 網址，系統會盡量抓出座標。
-        </p>
-
-        <button id="parseBtn" class="secondary" type="button">↺ 重新輸入</button>
-        <button id="analyzeBtn" class="blue" type="button">🗺️ 分析地址與區域</button>
+        <div class="coordinate-action-row">
+          <button id="parseBtn" class="coordinate-action-btn secondary" type="button">↺ 重新輸入</button>
+          <button id="analyzeBtn" class="coordinate-action-btn blue" type="button">🗺️ 分析地址與區域</button>
+          <button id="quickAddBtn" class="coordinate-action-btn orange" type="button">⚡ 快速新增</button>
+        </div>
 
         <div id="status" class="status"></div>
 
@@ -99,7 +98,7 @@
 
         <button id="addBtn" type="button">🌼 新增到紀錄</button>
 
-        <div id="debugStatus" class="debug">版本：1.0.22</div>
+        <div id="debugStatus" class="debug">版本：1.0.23</div>
       </section>
     </section>
 
@@ -380,22 +379,22 @@
   </nav>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="./js/globals.js?v=1.0.22"></script>
-  <script src="./js/geo.js?v=1.0.22"></script>
+  <script src="./js/globals.js?v=1.0.23"></script>
+  <script src="./js/geo.js?v=1.0.23"></script>
 
-  <script src="./js/records-state.js?v=1.0.22"></script>
-  <script src="./data/taiwan-districts-a.js?v=1.0.22"></script>
-  <script src="./data/taiwan-districts-b.js?v=1.0.22"></script>
-  <script src="./js/records-core.js?v=1.0.22"></script>
-  <script src="./js/records-view.js?v=1.0.22"></script>
+  <script src="./js/records-state.js?v=1.0.23"></script>
+  <script src="./data/taiwan-districts-a.js?v=1.0.23"></script>
+  <script src="./data/taiwan-districts-b.js?v=1.0.23"></script>
+  <script src="./js/records-core.js?v=1.0.23"></script>
+  <script src="./js/records-view.js?v=1.0.23"></script>
 
-  <script src="./js/backup.js?v=1.0.22"></script>
-  <script src="./js/route.js?v=1.0.22"></script>
-  <script src="./js/route-plans.js?v=1.0.22"></script>
-  <script src="./js/map.js?v=1.0.22"></script>
-  <script src="./js/stats.js?v=1.0.22"></script>
-  <script src="./js/help.js?v=1.0.22"></script>
-  <script src="./js/pwa.js?v=1.0.22"></script>
-  <script src="./js/init.js?v=1.0.22"></script>
+  <script src="./js/backup.js?v=1.0.23"></script>
+  <script src="./js/route.js?v=1.0.23"></script>
+  <script src="./js/route-plans.js?v=1.0.23"></script>
+  <script src="./js/map.js?v=1.0.23"></script>
+  <script src="./js/stats.js?v=1.0.23"></script>
+  <script src="./js/help.js?v=1.0.23"></script>
+  <script src="./js/pwa.js?v=1.0.23"></script>
+  <script src="./js/init.js?v=1.0.23"></script>
 </body>
 </html>

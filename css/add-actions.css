@@ -1,0 +1,45 @@
+.coordinate-action-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.coordinate-action-row .coordinate-action-btn {
+  margin-top: 0;
+  min-height: 58px;
+  padding: 12px 8px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+button.orange {
+  background: linear-gradient(135deg, #fbbf24, #f97316, #ea580c);
+  box-shadow: 0 10px 22px rgba(249, 115, 22, 0.24);
+}
+
+@media (max-width: 430px) {
+  .coordinate-action-row {
+    gap: 8px;
+  }
+
+  .coordinate-action-row .coordinate-action-btn {
+    min-height: 54px;
+    padding: 10px 5px;
+    border-radius: 16px;
+    font-size: 13px;
+    letter-spacing: -0.2px;
+  }
+}
+
+@media (max-width: 340px) {
+  .coordinate-action-row {
+    grid-template-columns: 1fr;
+  }
+
+  .coordinate-action-row .coordinate-action-btn {
+    font-size: 15px;
+  }
+}
