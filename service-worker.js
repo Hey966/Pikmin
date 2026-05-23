@@ -1,11 +1,12 @@
-const APP_VERSION = "1.0.22";
-const CACHE_NAME = "pikmin-flower-notes-v22";
+const APP_VERSION = "1.0.23";
+const CACHE_NAME = "pikmin-flower-notes-v23";
 
 const APP_ASSETS = [
   "./",
   "./index.html",
   "./version.json",
   "./css/style.css",
+  "./css/add-actions.css",
   "./css/map.css",
   "./css/route-plans.css",
   "./css/help.css",
