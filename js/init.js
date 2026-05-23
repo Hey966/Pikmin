@@ -1,4 +1,4 @@
-var APP_VERSION = "1.0.19";
+var APP_VERSION = "1.0.20";
 var debugBox = document.getElementById("debugStatus");
 
 function setDebug(text) {
@@ -123,6 +123,15 @@ function startApp() {
     goPage("help");
   });
 
+  var viewCountryFilter = document.getElementById("viewCountryFilter");
+  if (viewCountryFilter) {
+    viewCountryFilter.onchange = function() {
+      selectedViewRegion = null;
+      selectedViewDistrict = null;
+      renderList();
+    };
+  }
+
   var viewSearchText = document.getElementById("viewSearchText");
   if (viewSearchText) {
     viewSearchText.oninput = function() {
@@ -165,6 +174,11 @@ function startApp() {
     importFile.onchange = importRecords;
   }
 
+  var mapCountryFilter = document.getElementById("mapCountryFilter");
+  if (mapCountryFilter) {
+    mapCountryFilter.onchange = function() { updateMapCityOptions(); };
+  }
+
   var mapCityFilter = document.getElementById("mapCityFilter");
   if (mapCityFilter) {
     mapCityFilter.onchange = function() { updateMapDistrictOptions(); };
@@ -173,6 +187,14 @@ function startApp() {
   var mapDistrictFilter = document.getElementById("mapDistrictFilter");
   if (mapDistrictFilter) {
     mapDistrictFilter.onchange = function() { renderMapOverview(); };
+  }
+
+  var routeCountryFilter = document.getElementById("routeCountryFilter");
+  if (routeCountryFilter) {
+    routeCountryFilter.onchange = function() {
+      updateRouteCityOptions();
+      clearRoutePlanStatus();
+    };
   }
 
   var routeCityFilter = document.getElementById("routeCityFilter");
