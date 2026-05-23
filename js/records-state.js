@@ -24,16 +24,41 @@ function getSelectedViewCountry() {
 function normalizeCountryValue(country) {
   var text = normalizeTaiwanText(country || "").trim();
 
-  if (text === "" || text === "台灣" || text === "臺灣") {
-    return "台灣";
-  }
+  if (text === "" || text === "台灣" || text === "臺灣") return "台灣";
+  if (text === "Vietnam" || text === "Viet Nam" || text === "越南社會主義共和國") return "越南";
+  if (text === "Japan") return "日本";
+  if (text === "Korea" || text === "South Korea" || text === "韓國") return "韓國";
+  if (text === "Hong Kong") return "香港";
 
   return text;
+}
+
+function isCoordinateInBox(lat, lon, minLat, maxLat, minLon, maxLon) {
+  return lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon;
+}
+
+function guessCountryFromCoordinates(y, x) {
+  var lat = Number(y);
+  var lon = Number(x);
+
+  if (isNaN(lat) || isNaN(lon)) return "台灣";
+
+  if (isCoordinateInBox(lat, lon, 8.0, 23.8, 102.0, 110.8)) return "越南";
+  if (isCoordinateInBox(lat, lon, 21.8, 25.5, 119.0, 122.5)) return "台灣";
+  if (isCoordinateInBox(lat, lon, 22.1, 22.6, 113.8, 114.5)) return "香港";
+  if (isCoordinateInBox(lat, lon, 33.0, 46.5, 129.0, 146.5)) return "日本";
+  if (isCoordinateInBox(lat, lon, 33.0, 39.8, 124.0, 132.0)) return "韓國";
+
+  return "其他";
 }
 
 function getPointCountry(point) {
   if (point && point.country) {
     return normalizeCountryValue(point.country);
+  }
+
+  if (point && point.x !== undefined && point.y !== undefined) {
+    return guessCountryFromCoordinates(point.y, point.x);
   }
 
   return "台灣";
@@ -65,26 +90,18 @@ function guessDistrictFromArea(area, category) {
   var districts = TAIWAN_DISTRICTS[city] || [];
 
   for (var i = 0; i < districts.length; i++) {
-    if (text.indexOf(districts[i]) !== -1) {
-      return districts[i];
-    }
+    if (text.indexOf(districts[i]) !== -1) return districts[i];
   }
 
   if (typeof getRememberedAnalyzedDistrict === "function") {
     var rememberedDistrict = getRememberedAnalyzedDistrict(area, category);
-
-    if (rememberedDistrict) {
-      return rememberedDistrict;
-    }
+    if (rememberedDistrict) return rememberedDistrict;
   }
 
   text = text.replace(city, "").trim();
-
   var match = text.match(/([\u4e00-\u9fa5]{1,8}(區|鄉|鎮|市))/);
 
-  if (match && match[1]) {
-    return match[1];
-  }
+  if (match && match[1]) return match[1];
 
   return "未分類區域";
 }
@@ -106,22 +123,16 @@ function shortRegionName(region) {
 function getRegionsForCountry(country) {
   country = normalizeCountryValue(country);
 
-  if (country === "台灣") {
-    return TAIWAN_REGIONS;
-  }
+  if (country === "台灣") return TAIWAN_REGIONS;
 
   var regionMap = {};
   var regions = [];
 
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
-
-    if (getPointCountry(p) !== country) {
-      continue;
-    }
+    if (getPointCountry(p) !== country) continue;
 
     var region = p.category || "未分類";
-
     if (!regionMap[region]) {
       regionMap[region] = true;
       regions.push(region);
@@ -136,30 +147,17 @@ function getDistrictsForTaiwanCity(city) {
   var districts = [];
   var source = TAIWAN_DISTRICTS[city] || [];
 
-  for (var i = 0; i < source.length; i++) {
-    districts.push(source[i]);
-  }
+  for (var i = 0; i < source.length; i++) districts.push(source[i]);
 
-  if (hasUnclassifiedDistrictPoints(city)) {
-    districts.push("未分類區域");
-  }
-
+  if (hasUnclassifiedDistrictPoints(city)) districts.push("未分類區域");
   return districts;
 }
 
 function hasUnclassifiedDistrictPoints(city) {
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
-
-    if (
-      getPointCountry(p) === "台灣" &&
-      p.category === city &&
-      getPointDistrict(p) === "未分類區域"
-    ) {
-      return true;
-    }
+    if (getPointCountry(p) === "台灣" && p.category === city && getPointDistrict(p) === "未分類區域") return true;
   }
-
   return false;
 }
 
@@ -169,17 +167,10 @@ function countActiveDistrictsInCity(city) {
 
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
-
-    if (getPointCountry(p) !== "台灣") {
-      continue;
-    }
-
-    if (p.category !== city) {
-      continue;
-    }
+    if (getPointCountry(p) !== "台灣") continue;
+    if (p.category !== city) continue;
 
     var district = getPointDistrict(p);
-
     if (!districtMap[district]) {
       districtMap[district] = true;
       count++;
@@ -198,10 +189,7 @@ function countPointsInRegion(country, region) {
 
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
-
-    if (getPointCountry(p) === normalizeCountryValue(country) && p.category === region) {
-      count++;
-    }
+    if (getPointCountry(p) === normalizeCountryValue(country) && p.category === region) count++;
   }
 
   return count;
@@ -212,14 +200,7 @@ function countPointsInDistrict(city, district) {
 
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
-
-    if (
-      getPointCountry(p) === "台灣" &&
-      p.category === city &&
-      getPointDistrict(p) === district
-    ) {
-      count++;
-    }
+    if (getPointCountry(p) === "台灣" && p.category === city && getPointDistrict(p) === district) count++;
   }
 
   return count;

@@ -198,29 +198,21 @@ function toggleFavorite(id) {
     }
   }
 
-  if (!changed) {
-    return;
-  }
+  if (!changed) return;
 
   savePoints();
   renderList();
 
-  if (typeof renderStatsPage === "function") {
-    renderStatsPage();
-  }
+  if (typeof renderStatsPage === "function") renderStatsPage();
 }
 
 function deletePoint(id) {
-  if (!confirm("確定要刪除嗎？")) {
-    return;
-  }
+  if (!confirm("確定要刪除嗎？")) return;
 
   var newPoints = [];
 
   for (var i = 0; i < points.length; i++) {
-    if (String(points[i].id) !== String(id)) {
-      newPoints.push(points[i]);
-    }
+    if (String(points[i].id) !== String(id)) newPoints.push(points[i]);
   }
 
   points = newPoints;
@@ -228,9 +220,28 @@ function deletePoint(id) {
   renderList();
   refreshRouteListIfReady();
 
-  if (String(editingId) === String(id)) {
-    resetForm();
+  if (String(editingId) === String(id)) resetForm();
+}
+
+function normalizePointCountryByCoordinates(point) {
+  if (!point || typeof guessCountryFromCoordinates !== "function") return false;
+
+  var guessedCountry = guessCountryFromCoordinates(point.y, point.x);
+  var currentCountry = getPointCountry(point);
+
+  if (guessedCountry && guessedCountry !== "其他" && currentCountry !== guessedCountry) {
+    point.country = guessedCountry;
+    point.district = guessDistrictByCountry(point.area || "", point.category || "", guessedCountry);
+    point.updatedAt = new Date().toLocaleString();
+    return true;
   }
+
+  if (!point.country) {
+    point.country = currentCountry;
+    return true;
+  }
+
+  return false;
 }
 
 async function reclassifyUncategorizedDistricts() {
@@ -240,24 +251,41 @@ async function reclassifyUncategorizedDistricts() {
   }
 
   var candidates = [];
+  var countryUpdatedImmediately = 0;
 
   for (var i = 0; i < points.length; i++) {
     var point = points[i];
-    var currentDistrict = point.district || "未分類區域";
 
-    if (currentDistrict === "未分類區域") {
-      candidates.push(point);
+    if (normalizePointCountryByCoordinates(point)) {
+      countryUpdatedImmediately++;
+    }
+
+    if (getPointCountry(point) === "台灣") {
+      var currentDistrict = point.district || "未分類區域";
+
+      if (currentDistrict === "未分類區域") {
+        candidates.push(point);
+      }
     }
   }
 
   if (candidates.length === 0) {
+    if (countryUpdatedImmediately > 0) {
+      savePoints();
+      renderList();
+      refreshRouteListIfReady();
+      if (typeof renderStatsPage === "function") renderStatsPage();
+      alert("已依座標補回國家分類：" + countryUpdatedImmediately + " 筆。\n\n目前沒有需要重新分析的台灣未分類區域。");
+      return;
+    }
+
     alert("目前沒有需要重新分析的未分類區域。");
     return;
   }
 
   if (!confirm(
-    "將用座標重新分析 " + candidates.length + " 筆未分類資料。\n\n" +
-    "這會逐筆查詢地址，可能需要一些時間。"
+    "將整理國家分類並重新分析 " + candidates.length + " 筆台灣未分類資料。\n\n" +
+    "非台灣座標會直接依經緯度補回國家，不會硬套台灣區域。"
   )) {
     return;
   }
@@ -290,29 +318,19 @@ async function reclassifyUncategorizedDistricts() {
       var result = await reverseGeocodePointForDistrict(targetPoint);
 
       if (result && result.ok && result.district) {
+        targetPoint.country = "台灣";
         targetPoint.district = result.district;
         targetPoint.updatedAt = new Date().toLocaleString();
         updated++;
 
         var currentCategory = targetPoint.category || "";
 
-        if (
-          result.region &&
-          (
-            currentCategory === "" ||
-            currentCategory === "未分類" ||
-            currentCategory === "其他"
-          )
-        ) {
+        if (result.region && (currentCategory === "" || currentCategory === "未分類" || currentCategory === "其他")) {
           targetPoint.category = result.region;
           updatedRegion++;
         }
       } else {
-        if (result && (
-          result.reason === "network-error" ||
-          result.reason === "http-error" ||
-          result.reason === "parse-error"
-        )) {
+        if (result && (result.reason === "network-error" || result.reason === "http-error" || result.reason === "parse-error")) {
           failed++;
         } else {
           stillUnclassified++;
@@ -324,22 +342,17 @@ async function reclassifyUncategorizedDistricts() {
       }
     }
 
-    if (updated > 0 || updatedRegion > 0) {
+    if (updated > 0 || updatedRegion > 0 || countryUpdatedImmediately > 0) {
       savePoints();
       renderList();
-
-      if (typeof refreshRouteListIfReady === "function") {
-        refreshRouteListIfReady();
-      }
-
-      if (typeof renderStatsPage === "function") {
-        renderStatsPage();
-      }
+      refreshRouteListIfReady();
+      if (typeof renderStatsPage === "function") renderStatsPage();
     }
 
     alert(
       "重新分析完成！\n\n" +
-      "檢查未分類資料：" + candidates.length + " 筆\n" +
+      "依座標補回國家：" + countryUpdatedImmediately + " 筆\n" +
+      "檢查台灣未分類資料：" + candidates.length + " 筆\n" +
       "成功補回正確區域：" + updated + " 筆\n" +
       "同步補回縣市分類：" + updatedRegion + " 筆\n" +
       "仍無法判斷：" + stillUnclassified + " 筆\n" +
@@ -354,46 +367,25 @@ async function reclassifyUncategorizedDistricts() {
 }
 
 function clearAll() {
-  if (!confirm("確定要清空全部座標資料與路線方案嗎？")) {
-    return;
-  }
+  if (!confirm("確定要清空全部座標資料與路線方案嗎？")) return;
 
   points = [];
   selectedViewRegion = null;
   selectedViewDistrict = null;
   savePoints();
 
-  if (typeof ROUTE_PLAN_STORAGE_KEY !== "undefined") {
-    localStorage.removeItem(ROUTE_PLAN_STORAGE_KEY);
-  }
-
-  if (typeof savedRoutePlans !== "undefined") {
-    savedRoutePlans = [];
-  }
-
-  if (typeof renderSavedRoutePlanOptions === "function") {
-    renderSavedRoutePlanOptions();
-  }
-
-  if (typeof clearRoutePlanStatus === "function") {
-    clearRoutePlanStatus();
-  }
-
-  if (typeof resetGeneratedRoute === "function") {
-    resetGeneratedRoute();
-  }
-
-  if (typeof resetRouteManualOrder === "function") {
-    resetRouteManualOrder();
-  }
+  if (typeof ROUTE_PLAN_STORAGE_KEY !== "undefined") localStorage.removeItem(ROUTE_PLAN_STORAGE_KEY);
+  if (typeof savedRoutePlans !== "undefined") savedRoutePlans = [];
+  if (typeof renderSavedRoutePlanOptions === "function") renderSavedRoutePlanOptions();
+  if (typeof clearRoutePlanStatus === "function") clearRoutePlanStatus();
+  if (typeof resetGeneratedRoute === "function") resetGeneratedRoute();
+  if (typeof resetRouteManualOrder === "function") resetRouteManualOrder();
 
   renderList();
   refreshRouteListIfReady();
   resetForm();
 
-  if (typeof renderStatsPage === "function") {
-    renderStatsPage();
-  }
+  if (typeof renderStatsPage === "function") renderStatsPage();
 
   alert("已清空全部座標資料與路線方案。");
 }
@@ -408,13 +400,8 @@ function copyCoordinate(id) {
     }
   }
 
-  if (text === "") {
-    return;
-  }
-
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text);
-  }
+  if (text === "") return;
+  if (navigator.clipboard) navigator.clipboard.writeText(text);
 
   alert("座標：" + text);
 }
@@ -437,27 +424,14 @@ function openPointInGoogleMaps(id) {
   var url = "https://www.google.com/maps?q=" + encodeURIComponent(point.y + "," + point.x);
   var opened = window.open(url, "_blank");
 
-  if (!opened) {
-    window.location.href = url;
-  }
+  if (!opened) window.location.href = url;
 }
 
 function refreshRouteListIfReady() {
-  if (typeof savePoints === "function") {
-    savePoints();
-  }
-
-  if (typeof renderList === "function") {
-    renderList();
-  }
-
-  if (typeof resetGeneratedRoute === "function") {
-    resetGeneratedRoute();
-  }
-
-  if (typeof resetRouteManualOrder === "function") {
-    resetRouteManualOrder();
-  }
+  if (typeof savePoints === "function") savePoints();
+  if (typeof renderList === "function") renderList();
+  if (typeof resetGeneratedRoute === "function") resetGeneratedRoute();
+  if (typeof resetRouteManualOrder === "function") resetRouteManualOrder();
 
   if (typeof renderRoutePointList === "function") {
     renderRoutePointList();
@@ -465,7 +439,5 @@ function refreshRouteListIfReady() {
     setTimeout(renderRoutePointList, 200);
   }
 
-  if (typeof renderStatsPage === "function") {
-    renderStatsPage();
-  }
+  if (typeof renderStatsPage === "function") renderStatsPage();
 }
