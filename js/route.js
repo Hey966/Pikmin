@@ -3,7 +3,8 @@ var OSRM_PROFILE = "driving";
 var routeManualOrder = [];
 
 function getRouteCountryValue() {
-  return "台灣";
+  var select = document.getElementById("routeCountryFilter");
+  return normalizeCountryValue(select ? select.value : "台灣");
 }
 
 function getRouteCityValue() {
@@ -54,7 +55,8 @@ function updateRouteCityOptions() {
   if (!citySelect) return;
 
   var cities = getRouteCitiesByCountry(country);
-  var html = '<option value="全部縣市">全部縣市</option>';
+  var label = country === "台灣" ? "全部縣市" : "全部地區";
+  var html = '<option value="全部縣市">' + label + '</option>';
 
   for (var i = 0; i < cities.length; i++) {
     html += '<option value="' + escapeHTML(cities[i]) + '">' + escapeHTML(cities[i]) + '</option>';
@@ -92,15 +94,17 @@ function updateRouteDistrictOptions() {
 }
 
 function getRouteCitiesByCountry(country) {
-  return TAIWAN_REGIONS;
+  return getRegionsForCountry(country);
 }
 
 function getRouteDistricts(country, city) {
   if (city === "全部縣市") return [];
-  return getDistrictsForTaiwanCity(city);
+  if (country === "台灣") return getDistrictsForTaiwanCity(city);
+  return [];
 }
 
 function getVisiblePointsForRoute() {
+  var country = getRouteCountryValue();
   var city = getRouteCityValue();
   var district = getRouteDistrictValue();
   var visiblePoints = [];
@@ -108,9 +112,9 @@ function getVisiblePointsForRoute() {
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
 
-    if (getPointCountry(p) !== "台灣") continue;
+    if (getPointCountry(p) !== country) continue;
     if (city !== "全部縣市" && p.category !== city) continue;
-    if (district !== "全部區域" && getPointDistrict(p) !== district) continue;
+    if (country === "台灣" && district !== "全部區域" && getPointDistrict(p) !== district) continue;
 
     if (
       p.x !== undefined &&
@@ -298,7 +302,7 @@ function renderRoutePointList() {
 
     html += '<span class="route-order-copy">';
     html += '<b>' + escapeHTML(p.name || "未命名巨大花朵") + '</b>';
-    html += '<span>' + escapeHTML(p.category || "未分類") + '</span>';
+    html += '<span>' + escapeHTML(getPointCountry(p)) + '｜' + escapeHTML(p.category || "未分類") + '</span>';
     html += '<small>' + escapeHTML(getPointDistrict(p)) + '｜' + escapeHTML(p.y) + ', ' + escapeHTML(p.x) + '</small>';
     html += '</span>';
     html += '</label>';
@@ -619,6 +623,7 @@ function buildGpxTextFromGeneratedRoute(routeData) {
 function joinRouteDesc(point) {
   var parts = [];
 
+  if (point.country) parts.push("國家：" + getPointCountry(point));
   if (point.area) parts.push("區域：" + point.area);
   if (point.category) parts.push("地區：" + point.category);
   if (point.note) parts.push("備註：" + point.note);
