@@ -52,13 +52,34 @@ function guessCountryFromCoordinates(y, x) {
   return "其他";
 }
 
+function shouldPreferCoordinateCountry(point, coordinateCountry, savedCountry) {
+  if (!point || !coordinateCountry || coordinateCountry === "其他") return false;
+
+  if (!savedCountry || savedCountry === "其他") return true;
+
+  if (coordinateCountry !== savedCountry && coordinateCountry !== "台灣") return true;
+
+  return false;
+}
+
 function getPointCountry(point) {
-  if (point && point.country) {
-    return normalizeCountryValue(point.country);
-  }
+  var savedCountry = point && point.country ? normalizeCountryValue(point.country) : "";
+  var coordinateCountry = "";
 
   if (point && point.x !== undefined && point.y !== undefined) {
-    return guessCountryFromCoordinates(point.y, point.x);
+    coordinateCountry = guessCountryFromCoordinates(point.y, point.x);
+  }
+
+  if (shouldPreferCoordinateCountry(point, coordinateCountry, savedCountry)) {
+    return coordinateCountry;
+  }
+
+  if (savedCountry) {
+    return savedCountry;
+  }
+
+  if (coordinateCountry) {
+    return coordinateCountry;
   }
 
   return "台灣";
