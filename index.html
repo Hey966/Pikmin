@@ -9,14 +9,14 @@
   <meta name="apple-mobile-web-app-title" content="Pikmin 座標筆記">
   <title>皮克敏巨大花朵座標紀錄</title>
 
-  <link rel="manifest" href="./manifest.webmanifest?v=1.0.19">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png?v=1.0.19">
+  <link rel="manifest" href="./manifest.webmanifest?v=1.0.20">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png?v=1.0.20">
 
-  <link rel="stylesheet" href="./css/style.css?v=1.0.19">
-  <link rel="stylesheet" href="./css/map.css?v=1.0.19">
-  <link rel="stylesheet" href="./css/route-plans.css?v=1.0.19">
-  <link rel="stylesheet" href="./css/help.css?v=1.0.19">
-  <link rel="stylesheet" href="./css/stats.css?v=1.0.19">
+  <link rel="stylesheet" href="./css/style.css?v=1.0.20">
+  <link rel="stylesheet" href="./css/map.css?v=1.0.20">
+  <link rel="stylesheet" href="./css/route-plans.css?v=1.0.20">
+  <link rel="stylesheet" href="./css/help.css?v=1.0.20">
+  <link rel="stylesheet" href="./css/stats.css?v=1.0.20">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 
@@ -50,12 +50,20 @@
 
         <div class="divider"></div>
 
+        <label>國家</label>
+        <select id="country">
+          <option value="台灣">台灣</option>
+          <option value="日本">日本</option>
+          <option value="韓國">韓國</option>
+          <option value="香港">香港</option>
+          <option value="其他">其他</option>
+        </select>
+
         <label>區域</label>
         <input id="area" type="text" placeholder="例如：台北市 信義區">
 
         <label>地點名稱</label>
         <input id="name" type="text" placeholder="例如：台北 101">
-
 
         <label>地區</label>
         <select id="category">
@@ -90,7 +98,7 @@
 
         <button id="addBtn" type="button">🌼 新增到紀錄</button>
 
-        <div id="debugStatus" class="debug">版本：1.0.19</div>
+        <div id="debugStatus" class="debug">版本：1.0.20</div>
       </section>
     </section>
 
@@ -100,8 +108,17 @@
         <h2>🌼 查看座標</h2>
 
         <section class="view-tools-panel">
+          <label>國家</label>
+          <select id="viewCountryFilter">
+            <option value="台灣">台灣</option>
+            <option value="日本">日本</option>
+            <option value="韓國">韓國</option>
+            <option value="香港">香港</option>
+            <option value="其他">其他</option>
+          </select>
+
           <label>搜尋座標</label>
-          <input id="viewSearchText" type="text" placeholder="搜尋地點名稱、區域、備註或縣市">
+          <input id="viewSearchText" type="text" placeholder="搜尋地點名稱、區域、備註、國家或縣市">
 
           <div class="view-tools-actions">
             <button id="clearViewFiltersBtn" class="small-btn secondary" type="button">清除篩選</button>
@@ -113,12 +130,11 @@
           </div>
         </section>
 
-
         <button id="openMapOverviewBtn" class="map-entry-card" type="button">
           <span class="map-entry-icon">🗺️</span>
           <span class="map-entry-content">
             <b>地圖總覽</b>
-            <small>點擊進入地圖頁，依縣市與區域查看座標。</small>
+            <small>點擊進入地圖頁，依國家、縣市與區域查看座標。</small>
           </span>
           <span class="map-entry-arrow">›</span>
         </button>
@@ -138,8 +154,16 @@
         </div>
 
         <section class="map-filter-panel">
+          <label>國家</label>
+          <select id="mapCountryFilter">
+            <option value="台灣">台灣</option>
+            <option value="日本">日本</option>
+            <option value="韓國">韓國</option>
+            <option value="香港">香港</option>
+            <option value="其他">其他</option>
+          </select>
 
-          <label>縣市</label>
+          <label>縣市 / 地區</label>
           <select id="mapCityFilter">
             <option value="全部縣市">全部縣市</option>
           </select>
@@ -161,12 +185,20 @@
         <h2>🧭 路線規劃 / GPX</h2>
 
         <p class="hint">
-          先選擇縣市與區域，再勾選要加入路線的座標。
+          先選擇國家、縣市與區域，再勾選要加入路線的座標。
           GPX 會使用產生後的道路密集座標點，不是座標之間的直線。
         </p>
 
+        <label>國家</label>
+        <select id="routeCountryFilter">
+          <option value="台灣">台灣</option>
+          <option value="日本">日本</option>
+          <option value="韓國">韓國</option>
+          <option value="香港">香港</option>
+          <option value="其他">其他</option>
+        </select>
 
-        <label>縣市</label>
+        <label>縣市 / 地區</label>
         <select id="routeCityFilter">
           <option value="全部縣市">全部縣市</option>
         </select>
@@ -344,22 +376,22 @@
   </nav>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="./js/globals.js?v=1.0.19"></script>
-  <script src="./js/geo.js?v=1.0.19"></script>
+  <script src="./js/globals.js?v=1.0.20"></script>
+  <script src="./js/geo.js?v=1.0.20"></script>
 
-  <script src="./js/records-state.js?v=1.0.19"></script>
-  <script src="./data/taiwan-districts-a.js?v=1.0.19"></script>
-  <script src="./data/taiwan-districts-b.js?v=1.0.19"></script>
-  <script src="./js/records-core.js?v=1.0.19"></script>
-  <script src="./js/records-view.js?v=1.0.19"></script>
+  <script src="./js/records-state.js?v=1.0.20"></script>
+  <script src="./data/taiwan-districts-a.js?v=1.0.20"></script>
+  <script src="./data/taiwan-districts-b.js?v=1.0.20"></script>
+  <script src="./js/records-core.js?v=1.0.20"></script>
+  <script src="./js/records-view.js?v=1.0.20"></script>
 
-  <script src="./js/backup.js?v=1.0.19"></script>
-  <script src="./js/route.js?v=1.0.19"></script>
-  <script src="./js/route-plans.js?v=1.0.19"></script>
-  <script src="./js/map.js?v=1.0.19"></script>
-  <script src="./js/stats.js?v=1.0.19"></script>
-  <script src="./js/help.js?v=1.0.19"></script>
-  <script src="./js/pwa.js?v=1.0.19"></script>
-  <script src="./js/init.js?v=1.0.19"></script>
+  <script src="./js/backup.js?v=1.0.20"></script>
+  <script src="./js/route.js?v=1.0.20"></script>
+  <script src="./js/route-plans.js?v=1.0.20"></script>
+  <script src="./js/map.js?v=1.0.20"></script>
+  <script src="./js/stats.js?v=1.0.20"></script>
+  <script src="./js/help.js?v=1.0.20"></script>
+  <script src="./js/pwa.js?v=1.0.20"></script>
+  <script src="./js/init.js?v=1.0.20"></script>
 </body>
 </html>
