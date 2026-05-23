@@ -9,7 +9,7 @@ function ensureInstallStylesheet() {
   var link = document.createElement("link");
   link.id = "installAppStylesheet";
   link.rel = "stylesheet";
-  link.href = "./css/install.css?v=1.0.19";
+  link.href = "./css/install.css?v=1.0.20";
   document.head.appendChild(link);
 }
 
@@ -315,7 +315,7 @@ function openRegionRoutePicker() {
   overlay.innerHTML =
     '<section class="region-route-sheet" role="dialog" aria-modal="true" aria-label="依區域快速產生路線">' +
     '<div class="region-route-head">' +
-    '<div><h3 id="regionRouteTitle">選擇縣市</h3><p id="regionRouteHint">先選縣市，再選區域；選完會自動套用篩選、全選該區域座標並產生道路路線。</p></div>' +
+    '<div><h3 id="regionRouteTitle">選擇地區</h3><p id="regionRouteHint">會依目前路線頁選到的國家顯示可用地區。</p></div>' +
     '<button class="region-route-close" type="button" onclick="closeRegionRoutePicker()">關閉</button>' +
     '</div>' +
     '<div id="regionRouteToolbar" class="region-route-toolbar"></div>' +
@@ -336,18 +336,24 @@ function renderRegionRouteCityStep() {
   var hint = document.getElementById("regionRouteHint");
   var toolbar = document.getElementById("regionRouteToolbar");
   var grid = document.getElementById("regionRouteGrid");
+  var country = typeof getRouteCountryValue === "function" ? getRouteCountryValue() : "台灣";
 
   if (!grid) return;
 
-  if (title) title.innerHTML = "選擇縣市";
-  if (hint) hint.innerHTML = "先選縣市，再選該縣市底下的區域。";
+  if (title) title.innerHTML = "選擇" + (country === "台灣" ? "縣市" : "地區");
+  if (hint) hint.innerHTML = "目前國家：" + escapeHTML(country) + "。選完後會自動套用篩選、全選座標並產生道路路線。";
   if (toolbar) toolbar.innerHTML = "";
 
   var cities = typeof getRouteCitiesByCountry === "function"
-    ? getRouteCitiesByCountry("台灣")
-    : (typeof TAIWAN_REGIONS !== "undefined" ? TAIWAN_REGIONS : []);
+    ? getRouteCitiesByCountry(country)
+    : [];
 
   var html = "";
+
+  if (cities.length === 0) {
+    grid.innerHTML = '<div class="empty">目前這個國家沒有可用地區 🌱</div>';
+    return;
+  }
 
   for (var i = 0; i < cities.length; i++) {
     html += '<button class="region-route-tile" type="button" onclick="renderRegionRouteDistrictStep(\'' + escapeHTML(String(cities[i])) + '\')">' +
@@ -363,19 +369,20 @@ function renderRegionRouteDistrictStep(city) {
   var hint = document.getElementById("regionRouteHint");
   var toolbar = document.getElementById("regionRouteToolbar");
   var grid = document.getElementById("regionRouteGrid");
+  var country = typeof getRouteCountryValue === "function" ? getRouteCountryValue() : "台灣";
 
   if (!grid) return;
 
   if (title) title.innerHTML = escapeHTML(city);
-  if (hint) hint.innerHTML = "選擇區域後，系統會直接使用該區域座標產生道路路線。";
+  if (hint) hint.innerHTML = "選擇後，系統會直接使用該範圍座標產生道路路線。";
   if (toolbar) {
-    toolbar.innerHTML = '<button class="region-route-back" type="button" onclick="renderRegionRouteCityStep()">← 返回縣市</button>';
+    toolbar.innerHTML = '<button class="region-route-back" type="button" onclick="renderRegionRouteCityStep()">← 返回列表</button>';
   }
 
-  var districts = typeof getRouteDistricts === "function" ? getRouteDistricts("台灣", city) : [];
+  var districts = typeof getRouteDistricts === "function" ? getRouteDistricts(country, city) : [];
   var html = "";
 
-  html += '<button class="region-route-tile" type="button" onclick="applyRegionRouteSelection(\'' + escapeHTML(String(city)) + '\', \'全部區域\')">全部區域<small>使用全市座標</small></button>';
+  html += '<button class="region-route-tile" type="button" onclick="applyRegionRouteSelection(\'' + escapeHTML(String(city)) + '\', \'全部區域\')">全部範圍<small>使用全部座標</small></button>';
 
   for (var i = 0; i < districts.length; i++) {
     html += '<button class="region-route-tile" type="button" onclick="applyRegionRouteSelection(\'' + escapeHTML(String(city)) + '\', \'' + escapeHTML(String(districts[i])) + '\')">' +
@@ -515,7 +522,7 @@ function checkForAppUpdate() {
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function() {
-    navigator.serviceWorker.register("./service-worker.js?v=1.0.19").then(function(registration) {
+    navigator.serviceWorker.register("./service-worker.js?v=1.0.20").then(function(registration) {
       appUpdateRegistration = registration;
 
       registration.addEventListener("updatefound", function() {

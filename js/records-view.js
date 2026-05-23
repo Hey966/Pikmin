@@ -1,3 +1,8 @@
+function getViewCountryValue() {
+  var select = document.getElementById("viewCountryFilter");
+  return normalizeCountryValue(select ? select.value : "台灣");
+}
+
 function renderList() {
   var list = document.getElementById("list");
 
@@ -59,6 +64,7 @@ function pointMatchesViewSearch(point, keyword) {
   }
 
   var searchable = [
+    getPointCountry(point) || "",
     point.name || "",
     point.area || "",
     point.category || "",
@@ -76,12 +82,13 @@ function renderFilteredPointSearchList() {
   var title = document.getElementById("viewRegionTitle");
   var keyword = getViewSearchText();
   var favoriteOnly = isFavoriteOnlyView();
+  var country = getSelectedViewCountry();
   var matched = [];
 
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
 
-    if (getPointCountry(p) !== "台灣") {
+    if (getPointCountry(p) !== country) {
       continue;
     }
 
@@ -97,7 +104,7 @@ function renderFilteredPointSearchList() {
   }
 
   if (title) {
-    var titleText = favoriteOnly ? "⭐ 收藏座標" : "🔎 搜尋結果";
+    var titleText = favoriteOnly ? "⭐ " + country + " 收藏座標" : "🔎 " + country + " 搜尋結果";
     var subText = "符合條件：<b>" + matched.length + "</b> 筆座標";
 
     if (keyword) {

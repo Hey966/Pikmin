@@ -2,11 +2,18 @@ var overviewMap = null;
 var overviewMarkerLayer = null;
 
 function getMapFallbackView() {
+  var country = getMapCountryValue();
+
+  if (country === "日本") return { center: [36.2, 138.2], zoom: 5 };
+  if (country === "韓國") return { center: [36.4, 127.8], zoom: 7 };
+  if (country === "香港") return { center: [22.32, 114.17], zoom: 11 };
+
   return { center: [23.7, 121], zoom: 7 };
 }
 
 function getMapCountryValue() {
-  return "台灣";
+  var select = document.getElementById("mapCountryFilter");
+  return normalizeCountryValue(select ? select.value : "台灣");
 }
 
 function getMapCityValue() {
@@ -24,6 +31,13 @@ function initializeMapSelectors() {
 }
 
 function syncMapCountryFromView() {
+  var viewCountry = getSelectedViewCountry();
+  var mapCountrySelect = document.getElementById("mapCountryFilter");
+
+  if (mapCountrySelect) {
+    mapCountrySelect.value = viewCountry;
+  }
+
   updateMapCityOptions();
 }
 
@@ -36,7 +50,8 @@ function updateMapCityOptions() {
   }
 
   var cities = getMapCitiesByCountry(country);
-  var html = '<option value="全部縣市">全部縣市</option>';
+  var label = country === "台灣" ? "全部縣市" : "全部地區";
+  var html = '<option value="全部縣市">' + label + '</option>';
 
   for (var i = 0; i < cities.length; i++) {
     html += '<option value="' + escapeHTML(cities[i]) + '">' + escapeHTML(shortRegionName(cities[i])) + '</option>';
@@ -71,7 +86,7 @@ function updateMapDistrictOptions() {
 }
 
 function getMapCitiesByCountry(country) {
-  return TAIWAN_REGIONS;
+  return getRegionsForCountry(country);
 }
 
 function getMapDistricts(country, city) {
@@ -79,10 +94,15 @@ function getMapDistricts(country, city) {
     return [];
   }
 
-  return getDistrictsForTaiwanCity(city);
+  if (country === "台灣") {
+    return getDistrictsForTaiwanCity(city);
+  }
+
+  return [];
 }
 
 function getVisiblePointsForMap() {
+  var country = getMapCountryValue();
   var city = getMapCityValue();
   var district = getMapDistrictValue();
   var visiblePoints = [];
@@ -90,7 +110,7 @@ function getVisiblePointsForMap() {
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
 
-    if (getPointCountry(p) !== "台灣") {
+    if (getPointCountry(p) !== country) {
       continue;
     }
 
@@ -98,7 +118,7 @@ function getVisiblePointsForMap() {
       continue;
     }
 
-    if (district !== "全部區域" && getPointDistrict(p) !== district) {
+    if (country === "台灣" && district !== "全部區域" && getPointDistrict(p) !== district) {
       continue;
     }
 
@@ -144,12 +164,13 @@ function ensureOverviewMap() {
 function renderMapOverview() {
   var summary = document.getElementById("mapSummary");
   var empty = document.getElementById("mapEmpty");
+  var country = getMapCountryValue();
   var visiblePoints = getVisiblePointsForMap();
   var map = ensureOverviewMap();
 
   if (summary) {
     summary.innerHTML =
-      "目前顯示 <b>" + visiblePoints.length + "</b> 個座標。點擊地圖標記可查看詳細資料。";
+      "目前顯示「" + escapeHTML(country) + "」<b>" + visiblePoints.length + "</b> 個座標。點擊地圖標記可查看詳細資料。";
   }
 
   if (!map || !overviewMarkerLayer) {

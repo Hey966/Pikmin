@@ -1,5 +1,5 @@
-const APP_VERSION = "1.0.19";
-const CACHE_NAME = "pikmin-flower-notes-v19";
+const APP_VERSION = "1.0.20";
+const CACHE_NAME = "pikmin-flower-notes-v20";
 
 const APP_ASSETS = [
   "./",
@@ -82,25 +82,32 @@ function putInCache(request, response) {
   return response;
 }
 
-function readFromCache(request) {
-  return caches.match(request, { ignoreSearch: true }).then(function(cachedResponse) {
-    if (cachedResponse) return cachedResponse;
-    if (request.mode === "navigate") return caches.match("./index.html", { ignoreSearch: true });
-    return null;
-  });
-}
-
 self.addEventListener("fetch", function(event) {
-  if (event.request.method !== "GET") return;
-  if (!shouldUseNetworkFirst(event.request)) return;
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  if (shouldUseNetworkFirst(event.request)) {
+    event.respondWith(
+      fetch(event.request)
+        .then(function(response) {
+          return putInCache(event.request, response);
+        })
+        .catch(function() {
+          return caches.match(event.request).then(function(cached) {
+            return cached || caches.match("./index.html");
+          });
+        })
+    );
+
+    return;
+  }
 
   event.respondWith(
-    fetch(event.request)
-      .then(function(networkResponse) {
-        return putInCache(event.request, networkResponse);
-      })
-      .catch(function() {
-        return readFromCache(event.request);
-      })
+    caches.match(event.request).then(function(cached) {
+      return cached || fetch(event.request).then(function(response) {
+        return putInCache(event.request, response);
+      });
+    })
   );
 });
