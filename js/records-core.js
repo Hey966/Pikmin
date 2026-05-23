@@ -1,8 +1,19 @@
+function getRecordFormCountry() {
+  var countrySelect = document.getElementById("country");
+  return normalizeCountryValue(countrySelect ? countrySelect.value : "台灣");
+}
+
+function setRecordFormCountry(country) {
+  var countrySelect = document.getElementById("country");
+  if (countrySelect) countrySelect.value = normalizeCountryValue(country || "台灣");
+}
+
 function addPoint() {
   parseCoordinate(false);
 
   var x = document.getElementById("x").value;
   var y = document.getElementById("y").value;
+  var country = getRecordFormCountry();
   var area = document.getElementById("area").value;
   var name = document.getElementById("name").value;
   var category = document.getElementById("category").value;
@@ -30,6 +41,7 @@ function addPoint() {
       alert(
         "這個座標已經存在，不能重複新增。\n\n" +
         "已存在資料：" + points[i].name + "\n" +
+        "國家：" + getPointCountry(points[i]) + "\n" +
         "地區：" + points[i].category + "\n" +
         "區域：" + points[i].area
       );
@@ -38,13 +50,13 @@ function addPoint() {
   }
 
   if (editingId !== null) {
-    updatePoint(x, y, area, name, category, note);
+    updatePoint(x, y, country, area, name, category, note);
   } else {
-    createPoint(x, y, area, name, category, note);
+    createPoint(x, y, country, area, name, category, note);
   }
 }
 
-function createPoint(x, y, area, name, category, note) {
+function createPoint(x, y, country, area, name, category, note) {
   var point = {
     id: new Date().getTime(),
     x: x,
@@ -52,7 +64,7 @@ function createPoint(x, y, area, name, category, note) {
     area: area,
     name: name || "未命名巨大花朵",
     category: category,
-    country: "台灣",
+    country: normalizeCountryValue(country),
     district: resolveDistrictForSave(area, category),
     favorite: false,
     note: note,
@@ -68,7 +80,7 @@ function createPoint(x, y, area, name, category, note) {
   alert("新增成功！");
 }
 
-function updatePoint(x, y, area, name, category, note) {
+function updatePoint(x, y, country, area, name, category, note) {
   for (var i = 0; i < points.length; i++) {
     if (String(points[i].id) === String(editingId)) {
       points[i].x = x;
@@ -76,7 +88,7 @@ function updatePoint(x, y, area, name, category, note) {
       points[i].area = area;
       points[i].name = name || "未命名巨大花朵";
       points[i].category = category;
-      points[i].country = "台灣";
+      points[i].country = normalizeCountryValue(country);
       points[i].district = resolveDistrictForSave(area, category);
       points[i].note = note;
       points[i].updatedAt = new Date().toLocaleString();
@@ -112,6 +124,7 @@ function editPoint(id) {
   document.getElementById("coordinateText").value = point.y + ", " + point.x;
   document.getElementById("x").value = point.x;
   document.getElementById("y").value = point.y;
+  setRecordFormCountry(getPointCountry(point));
   document.getElementById("area").value = point.area;
   document.getElementById("name").value = point.name;
   document.getElementById("category").value = point.category || "未分類";
@@ -129,6 +142,7 @@ function resetForm() {
   document.getElementById("coordinateText").value = "";
   document.getElementById("x").value = "";
   document.getElementById("y").value = "";
+  setRecordFormCountry("台灣");
   document.getElementById("area").value = "";
   document.getElementById("name").value = "";
   document.getElementById("category").value = "未分類";
@@ -149,6 +163,7 @@ function buildPointItemHTML(p) {
   html += '</div>';
 
   html += '<div><span class="area">' + escapeHTML(p.area) + '</span></div>';
+  html += '<div class="meta">國家：' + escapeHTML(getPointCountry(p)) + '</div>';
   html += '<div class="meta"><b>座標：</b>' + escapeHTML(p.y) + ', ' + escapeHTML(p.x) + '</div>';
   html += '<div class="meta">緯度 Latitude：' + escapeHTML(p.y) + ' ｜ 經度 Longitude：' + escapeHTML(p.x) + '</div>';
   html += '<div class="meta">備註：' + escapeHTML(p.note || "無") + '</div>';
