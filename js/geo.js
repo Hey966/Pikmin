@@ -102,6 +102,8 @@ function analyzeAddress() {
     return;
   }
 
+  updateCountrySelectByCoordinates(lat, lon);
+
   var analyzeBtn = document.getElementById("analyzeBtn");
   analyzeBtn.disabled = true;
   analyzeBtn.innerHTML = "分析中……";
@@ -147,6 +149,8 @@ function analyzeAddress() {
 
 function fillAddressData(data) {
   var address = data.address || {};
+  var analyzedCountry = detectCountryFromReverseData(data);
+  setCountrySelectValue(analyzedCountry);
 
   var allAddressText = collectTaiwanAddressText(address, data.display_name || "", data.name || "");
   var region = detectTaiwanRegionFromText(allAddressText);
@@ -203,17 +207,87 @@ function fillAddressData(data) {
   document.getElementById("area").value = areaText;
   document.getElementById("name").value = placeText;
 
-  autoSelectTaiwanRegion(
-    normalizeTaiwanName(region + " " + city + " " + areaText + " " + (data.display_name || ""))
-  );
+  if (analyzedCountry === "台灣") {
+    autoSelectTaiwanRegion(
+      normalizeTaiwanName(region + " " + city + " " + areaText + " " + (data.display_name || ""))
+    );
 
-  rememberAnalyzedTaiwanDistrict(region || city, district, areaText);
+    rememberAnalyzedTaiwanDistrict(region || city, district, areaText);
+  } else {
+    autoSelectNonTaiwanRegion(city || address.state || address.county || address.region || analyzedCountry || "其他");
+    rememberAnalyzedTaiwanDistrict("", "", "");
+  }
 
   if (district && district !== "") {
-    showStatus("分析完成：" + normalizeTaiwanName(data.display_name || "沒有完整地址資料") + "；已辨識區域：" + district);
+    showStatus("分析完成：" + normalizeTaiwanName(data.display_name || "沒有完整地址資料") + "；國家：" + analyzedCountry + "；已辨識區域：" + district);
   } else {
-    showStatus("分析完成：" + normalizeTaiwanName(data.display_name || "沒有完整地址資料") + "；未能確認行政區，可手動補充區域。");
+    showStatus("分析完成：" + normalizeTaiwanName(data.display_name || "沒有完整地址資料") + "；國家：" + analyzedCountry + "；未能確認行政區，可手動補充區域。");
   }
+}
+
+function updateCountrySelectByCoordinates(lat, lon) {
+  if (typeof guessCountryFromCoordinates !== "function") return;
+  setCountrySelectValue(guessCountryFromCoordinates(lat, lon));
+}
+
+function detectCountryFromReverseData(data) {
+  var address = data && data.address ? data.address : {};
+  var lat = data && data.lat !== undefined ? Number(data.lat) : Number(document.getElementById("y").value);
+  var lon = data && data.lon !== undefined ? Number(data.lon) : Number(document.getElementById("x").value);
+  var coordinateCountry = "";
+
+  if (typeof guessCountryFromCoordinates === "function") {
+    coordinateCountry = guessCountryFromCoordinates(lat, lon);
+    if (coordinateCountry && coordinateCountry !== "其他") return coordinateCountry;
+  }
+
+  return normalizeAnalyzedCountry(
+    address.country ||
+    address.country_code ||
+    "其他"
+  );
+}
+
+function normalizeAnalyzedCountry(country) {
+  if (typeof normalizeCountryValue === "function") {
+    return normalizeCountryValue(country);
+  }
+
+  var text = normalizeTaiwanName(country || "").trim();
+  var lower = text.toLowerCase();
+
+  if (text === "" || text === "台灣" || text === "臺灣" || lower === "tw" || lower === "taiwan") return "台灣";
+  if (text === "越南" || lower === "vn" || lower === "vietnam" || lower === "viet nam") return "越南";
+  if (text === "日本" || lower === "jp" || lower === "japan") return "日本";
+  if (text === "韓國" || lower === "kr" || lower === "korea" || lower === "south korea") return "韓國";
+  if (text === "香港" || lower === "hk" || lower === "hong kong") return "香港";
+
+  return text || "其他";
+}
+
+function setCountrySelectValue(country) {
+  var countrySelect = document.getElementById("country");
+  if (!countrySelect) return;
+
+  var normalized = normalizeAnalyzedCountry(country);
+  var hasOption = false;
+
+  for (var i = 0; i < countrySelect.options.length; i++) {
+    if (countrySelect.options[i].value === normalized) {
+      hasOption = true;
+      break;
+    }
+  }
+
+  countrySelect.value = hasOption ? normalized : "其他";
+}
+
+function autoSelectNonTaiwanRegion(regionText) {
+  var categorySelect = document.getElementById("category");
+  if (!categorySelect) return;
+
+  var normalized = normalizeTaiwanName(regionText || "").trim();
+  categorySelect.value = normalized === "" || normalized === "未分類區域" ? "其他" : "其他";
 }
 
 function collectTaiwanAddressText(address, displayName, placeName) {
