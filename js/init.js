@@ -1,4 +1,4 @@
-var APP_VERSION = "1.0.22";
+var APP_VERSION = "1.0.23";
 var debugBox = document.getElementById("debugStatus");
 
 function setDebug(text) {
@@ -96,6 +96,7 @@ function startApp() {
   }
 
   bindClick("analyzeBtn", "analyzeAddress");
+  bindClick("quickAddBtn", "addPoint");
   bindClick("addBtn", "addPoint");
   bindClick("clearBtn", "clearAll");
   bindClick("reclassifyDistrictBtn", "reclassifyUncategorizedDistricts");
