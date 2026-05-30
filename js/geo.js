@@ -7,6 +7,8 @@ function parseCoordinate(showAlertWhenFail) {
   var numbers = getNumbers(text);
 
   if (numbers.length < 2) {
+    hideCoordinatePreview();
+
     if (showAlertWhenFail) {
       alert("請貼上座標，例如：22.7882410, 121.1830930");
     }
@@ -43,6 +45,12 @@ function parseCoordinate(showAlertWhenFail) {
 
   document.getElementById("x").value = lon;
   document.getElementById("y").value = lat;
+
+  updateCountrySelectByCoordinates(lat, lon);
+  renderCoordinatePreview(lat, lon, {
+    mode: "parsed",
+    message: message
+  });
 
   showStatus(message + "；經度 " + lon + "，緯度 " + lat);
   return true;
@@ -103,6 +111,10 @@ function analyzeAddress() {
   }
 
   updateCountrySelectByCoordinates(lat, lon);
+  renderCoordinatePreview(lat, lon, {
+    mode: "analyzing",
+    message: "正在分析地址與區域……"
+  });
 
   var analyzeBtn = document.getElementById("analyzeBtn");
   analyzeBtn.disabled = true;
@@ -130,9 +142,17 @@ function analyzeAddress() {
           var data = JSON.parse(xhr.responseText);
           fillAddressData(data);
         } catch (error) {
+          renderCoordinatePreview(lat, lon, {
+            mode: "error",
+            message: "地址資料解析錯誤，可手動補充區域。"
+          });
           showStatus("分析失敗：地址資料解析錯誤。你仍然可以手動輸入區域。");
         }
       } else {
+        renderCoordinatePreview(lat, lon, {
+          mode: "error",
+          message: "地圖服務暫時無法使用，可手動補充區域。"
+        });
         showStatus("分析失敗：可能是網路問題或地圖服務暫時無法使用。你仍然可以手動輸入區域。");
       }
     }
@@ -141,6 +161,10 @@ function analyzeAddress() {
   xhr.onerror = function() {
     analyzeBtn.disabled = false;
     analyzeBtn.innerHTML = "🗺️ 分析地址與區域";
+    renderCoordinatePreview(lat, lon, {
+      mode: "error",
+      message: "網路連線錯誤，可手動補充區域。"
+    });
     showStatus("分析失敗：網路連線錯誤。你仍然可以手動輸入區域。");
   };
 
@@ -218,11 +242,104 @@ function fillAddressData(data) {
     rememberAnalyzedTaiwanDistrict("", "", "");
   }
 
+  renderCoordinatePreview(Number(document.getElementById("y").value), Number(document.getElementById("x").value), {
+    mode: "analyzed",
+    country: analyzedCountry,
+    area: areaText,
+    place: placeText,
+    category: document.getElementById("category") ? document.getElementById("category").value : "",
+    message: "地址分析完成，可確認資料後新增。"
+  });
+
   if (district && district !== "") {
     showStatus("分析完成：" + normalizeTaiwanName(data.display_name || "沒有完整地址資料") + "；國家：" + analyzedCountry + "；已辨識區域：" + district);
   } else {
     showStatus("分析完成：" + normalizeTaiwanName(data.display_name || "沒有完整地址資料") + "；國家：" + analyzedCountry + "；未能確認行政區，可手動補充區域。");
   }
+}
+
+function ensureCoordinatePreviewElement() {
+  var preview = document.getElementById("coordinatePreview");
+
+  if (preview) {
+    return preview;
+  }
+
+  var actionRow = document.querySelector(".coordinate-action-row");
+  if (!actionRow || !actionRow.parentNode) {
+    return null;
+  }
+
+  preview = document.createElement("section");
+  preview.id = "coordinatePreview";
+  preview.className = "coordinate-preview";
+  preview.style.display = "none";
+
+  actionRow.parentNode.insertBefore(preview, actionRow.nextSibling);
+  return preview;
+}
+
+function hideCoordinatePreview() {
+  var preview = document.getElementById("coordinatePreview");
+  if (preview) {
+    preview.style.display = "none";
+    preview.innerHTML = "";
+  }
+}
+
+function getCurrentCoordinatePreviewCountry(lat, lon, overrideCountry) {
+  if (overrideCountry) return normalizeAnalyzedCountry(overrideCountry);
+
+  if (typeof guessCountryFromCoordinates === "function") {
+    return guessCountryFromCoordinates(lat, lon);
+  }
+
+  var countrySelect = document.getElementById("country");
+  return countrySelect ? normalizeAnalyzedCountry(countrySelect.value) : "其他";
+}
+
+function renderCoordinatePreview(lat, lon, options) {
+  var preview = ensureCoordinatePreviewElement();
+  if (!preview) return;
+
+  options = options || {};
+
+  if (isNaN(Number(lat)) || isNaN(Number(lon))) {
+    hideCoordinatePreview();
+    return;
+  }
+
+  var country = getCurrentCoordinatePreviewCountry(Number(lat), Number(lon), options.country);
+  var areaInput = document.getElementById("area");
+  var nameInput = document.getElementById("name");
+  var categoryInput = document.getElementById("category");
+  var area = options.area || (areaInput ? areaInput.value : "") || "尚未分析";
+  var place = options.place || (nameInput ? nameInput.value : "") || "尚未命名";
+  var category = options.category || (categoryInput ? categoryInput.value : "") || "未分類";
+  var statusText = options.message || "座標已解析，可繼續分析或新增。";
+
+  var html = "";
+  html += '<div class="coordinate-preview-title">';
+  html += '<span>📌 座標預覽</span>';
+  html += '<small>' + escapeHTML(country) + '</small>';
+  html += '</div>';
+
+  html += '<div class="coordinate-preview-grid">';
+  html += buildCoordinatePreviewItem("緯度", Number(lat));
+  html += buildCoordinatePreviewItem("經度", Number(lon));
+  html += buildCoordinatePreviewItem("推測國家", country);
+  html += buildCoordinatePreviewItem("地區分類", category);
+  html += buildCoordinatePreviewItem("區域", area);
+  html += buildCoordinatePreviewItem("地點名稱", place);
+  html += '</div>';
+  html += '<div class="coordinate-preview-note">' + escapeHTML(statusText) + '</div>';
+
+  preview.innerHTML = html;
+  preview.style.display = "block";
+}
+
+function buildCoordinatePreviewItem(label, value) {
+  return '<div class="coordinate-preview-item"><span>' + escapeHTML(label) + '</span><b>' + escapeHTML(value) + '</b></div>';
 }
 
 function updateCountrySelectByCoordinates(lat, lon) {
